@@ -21,3 +21,30 @@ CRAZYFLIE_BASE := ../..
 OOT_CONFIG := $(PWD)/app-config
 
 include $(CRAZYFLIE_BASE)/tools/make/oot.mk
+
+
+PROG = build/cf2
+
+OPENOCD           ?= openocd
+OPENOCD_INTERFACE ?= interface/stlink.cfg
+OPENOCD_TARGET    ?= target/stm32f4x.cfg
+OPENOCD_CMDS      ?=
+
+CPU                        = stm32f4
+LOAD_ADDRESS_stm32f4       = 0x8000000
+LOAD_ADDRESS_CLOAD_stm32f4 = 0x8004000
+
+# Flags required by the ST library
+ifeq ($(CLOAD), 1)
+  LOAD_ADDRESS = $(LOAD_ADDRESS_CLOAD_$(CPU))
+else
+  LOAD_ADDRESS = $(LOAD_ADDRESS_$(CPU))
+endif
+
+
+
+#Flash the stm.
+flash:
+	$(OPENOCD) -d2 -f $(OPENOCD_INTERFACE) $(OPENOCD_CMDS) -f $(OPENOCD_TARGET) -c init -c targets -c "reset halt" \
+                 -c "flash write_image erase $(PROG).bin $(LOAD_ADDRESS) bin" \
+                 -c "verify_image $(PROG).bin $(LOAD_ADDRESS) bin" -c "reset run" -c shutdown
