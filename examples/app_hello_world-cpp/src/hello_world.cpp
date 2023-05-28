@@ -22,49 +22,62 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * hello_world.c - App layer application of a simple hello world debug print every
- *   2 seconds.
+ * hello_world.c - App layer application of a simple hello world debug print
+ * every 2 seconds.
  */
 
-
-#include <string.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
 
 #include <cassert>
 #include <string>
 
-extern "C"
-{
-  #include "app.h"
+extern "C" {
+#include "app.h"
 
-  #include "FreeRTOS.h"
-  #include "task.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
-  #include "debug.h"
+#include "debug.h"
+#include "log.h"
+#include "param.h"
+#include "stabilizer.h"
+
+#include "controller.h"
+#include "sensors.h"
 }
 
 #define DEBUG_MODULE "HELLOWORLD"
 
+// State variables for the stabilizer
+static sensorData_t sensorData;
+
 class MyClass {
-  public:
-    int myNum;
-    std::string myString;
+public:
+  int myNum;
+  std::string myString;
 };
 
-void appMain()
-{
+void appMain() {
   DEBUG_PRINT("Waiting for activation ...\n");
 
-  MyClass *cl = new MyClass();
-  DEBUG_PRINT("MyClass has a num: %d\n", cl->myNum);
+  DEBUG_PRINT(
+      "This is the App layer example of the internal log param api...\n");
+  logVarId_t idYaw = logGetVarId("stateEstimate", "yaw");
+  float yaw = 0.0f;
 
-  /* make sure that the assertion is not simple enough to be optimized away
-   * by the compiler */
-  assert(cl->myNum + cl->myString.size() == 0);
+  // Get the logging data
+  yaw = logGetFloat(idYaw);
+  DEBUG_PRINT("Yaw is now: %f deg\n", (double)yaw);
 
-  while(1) {
+  controllerInit(ControllerTypeAutoSelect);
+
+  while (1) {
     vTaskDelay(M2T(2000));
     DEBUG_PRINT("Hello World!\n");
+
+    // update sensorData struct (for logging variables)
+    sensorsAcquire(&sensorData);
   }
 }
