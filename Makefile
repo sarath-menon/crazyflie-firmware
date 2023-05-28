@@ -109,7 +109,7 @@ endif
 
 
 PLATFORM  ?= cf2
-PROG ?= $(PLATFORM)
+PROG ?= /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmware/examples/app_hello_world-cpp/build/$(PLATFORM)
 
 ifeq ($(CONFIG_DEBUG),y)
 ARCH_CFLAGS	+= -O0 -Wconversion
