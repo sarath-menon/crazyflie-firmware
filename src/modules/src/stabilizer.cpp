@@ -41,8 +41,8 @@ extern "C" {
 #include "stabilizer.h"
 
 #include "commander.h"
+#include "crtp_commander_high_level.h"
 #include "sensors.h"
-// #include "crtp_commander_high_level.h"
 // #include "crtp_localization_service.h"
 #include "collision_avoidance.h"
 #include "controller.h"
@@ -211,10 +211,10 @@ static void stabilizerTask(void *param) {
     // DEBUG_PRINT("Pitch from estimator: %f deg\n",
     // (double)state.attitude.pitch);
 
-    //   const bool areMotorsAllowedToRun = supervisorAreMotorsAllowedToRun();
+    const bool areMotorsAllowedToRun = supervisorAreMotorsAllowedToRun();
 
-    //   // Critical for safety, be careful if you modify this code!
-    //   crtpCommanderBlock(! areMotorsAllowedToRun);
+    // Critical for safety, be careful if you modify this code!
+    crtpCommanderBlock(!areMotorsAllowedToRun);
 
     //   if (crtpCommanderHighLevelGetSetpoint(&tempSetpoint, &state,
     //   stabilizerStep)) {
