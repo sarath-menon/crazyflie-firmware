@@ -34,6 +34,8 @@
 void logInit(void);
 bool logTest(void);
 
+#define STRINGIFY(TYPE) #TYPE
+
 /* Public API to access of log variables */
 
 /** Variable identifier.
@@ -49,9 +51,10 @@ typedef uint16_t logVarId_t;
  *
  * @param group Group name of the variable
  * @param name Name of the variable
- * @return The variable ID or an invalid ID. Use logVarIdIsValid() to check validity.
+ * @return The variable ID or an invalid ID. Use logVarIdIsValid() to check
+ * validity.
  */
-logVarId_t logGetVarId(const char* group, const char* name);
+logVarId_t logGetVarId(const char *group, const char *name);
 
 /** Check variable ID validity
  *
@@ -78,14 +81,14 @@ int logGetType(logVarId_t varid);
  *
  * The string buffers must be able to hold at least 32 bytes.
  */
-void logGetGroupAndName(logVarId_t varid, char** group, char** name);
+void logGetGroupAndName(logVarId_t varid, char **group, char **name);
 
 /** Get address of the logging variable
  *
  * @param varId variable ID, returned by logGetVarId()
  * @return Address of the location of log variable
  *  */
-void* logGetAddress(logVarId_t varid);
+void *logGetAddress(logVarId_t varid);
 
 /** Get log variable size in byte
  *
@@ -118,27 +121,27 @@ unsigned int logGetUint(logVarId_t varid);
 /* Basic log structure */
 struct log_s {
   uint8_t type;
-  char * name;
-  void * address;
+  char *name;
+  void *address;
 };
 
 /* Possible variable types */
-#define LOG_UINT8  1
+#define LOG_UINT8 1
 #define LOG_UINT16 2
 #define LOG_UINT32 3
-#define LOG_INT8   4
-#define LOG_INT16  5
-#define LOG_INT32  6
-#define LOG_FLOAT  7
-#define LOG_FP16   8
+#define LOG_INT8 4
+#define LOG_INT16 5
+#define LOG_INT32 6
+#define LOG_FLOAT 7
+#define LOG_FP16 8
 
-typedef uint8_t (*logAcquireUInt8)(uint32_t timestamp, void* data);
-typedef uint16_t (*logAcquireUInt16)(uint32_t timestamp, void* data);
-typedef uint32_t (*logAcquireUInt32)(uint32_t timestamp, void* data);
-typedef int8_t (*logAcquireInt8)(uint32_t timestamp, void* data);
-typedef int16_t (*logAcquireInt16)(uint32_t timestamp, void* data);
-typedef int32_t (*logAcquireInt32)(uint32_t timestamp, void* data);
-typedef float (*logAcquireFloat)(uint32_t timestamp, void* data);
+typedef uint8_t (*logAcquireUInt8)(uint32_t timestamp, void *data);
+typedef uint16_t (*logAcquireUInt16)(uint32_t timestamp, void *data);
+typedef uint32_t (*logAcquireUInt32)(uint32_t timestamp, void *data);
+typedef int8_t (*logAcquireInt8)(uint32_t timestamp, void *data);
+typedef int16_t (*logAcquireInt16)(uint32_t timestamp, void *data);
+typedef int32_t (*logAcquireInt32)(uint32_t timestamp, void *data);
+typedef float (*logAcquireFloat)(uint32_t timestamp, void *data);
 
 typedef struct {
   union {
@@ -151,7 +154,7 @@ typedef struct {
     logAcquireFloat aquireFloat;
   };
 
-  void* data;
+  void *data;
 } logByFunction_t;
 
 /* Internal defines */
@@ -159,34 +162,82 @@ typedef struct {
 #define LOG_GROUP 0x80
 #define LOG_BY_FUNCTION 0x40
 #define LOG_START 1
-#define LOG_STOP  0
+#define LOG_STOP 0
 
 /* Macros */
 
 #ifndef UNIT_TEST_MODE
 
-#define LOG_ADD(TYPE, NAME, ADDRESS) \
-   { .type = TYPE, .name = #NAME, .address = (void*)(ADDRESS), },
+#define LOG_ADD(TYPE, NAME, ADDRESS)                                           \
+  {                                                                            \
+      .type = TYPE,                                                            \
+      .name = #NAME,                                                           \
+      .address = (void *)(ADDRESS),                                            \
+  },
 
-#define LOG_ADD_CORE(TYPE, NAME, ADDRESS) \
+#define LOG_ADD_CPP(TYPE, NAME, ADDRESS)                                       \
+  {                                                                            \
+      .type = TYPE,                                                            \
+      .name = const_cast<char *>(STRINGIFY(NAME)),                             \
+      .address = (void *)(ADDRESS),                                            \
+  },
+
+#define LOG_ADD_CORE(TYPE, NAME, ADDRESS)                                      \
   LOG_ADD(TYPE | LOG_CORE, NAME, ADDRESS)
 
-#define LOG_ADD_BY_FUNCTION(TYPE, NAME, ADDRESS) \
-   { .type = TYPE | LOG_BY_FUNCTION, .name = #NAME, .address = (void*)(ADDRESS), },
+#define LOG_ADD_CORE_CPP(TYPE, NAME, ADDRESS)                                      \
+  LOG_ADD_CPP(TYPE | LOG_CORE, NAME, ADDRESS)
 
-#define LOG_ADD_GROUP(TYPE, NAME, ADDRESS) \
-   { \
-  .type = TYPE, .name = #NAME, .address = (void*)(ADDRESS), },
+#define LOG_ADD_BY_FUNCTION(TYPE, NAME, ADDRESS)                               \
+  {                                                                            \
+      .type = TYPE | LOG_BY_FUNCTION,                                          \
+      .name = #NAME,                                                           \
+      .address = (void *)(ADDRESS),                                            \
+  },
 
-#define LOG_GROUP_START(NAME)  \
-  static const struct log_s __logs_##NAME[] __attribute__((section(".log." #NAME), used)) = { \
-  LOG_ADD_GROUP(LOG_GROUP | LOG_START, NAME, 0x0)
+#define LOG_ADD_BY_FUNCTION_CPP(TYPE, NAME, ADDRESS)                               \
+  {                                                                            \
+      .type = TYPE | LOG_BY_FUNCTION,                                          \
+      .name = const_cast<char *>(STRINGIFY(NAME)),                                                           \
+      .address = (void *)(ADDRESS),                                            \
+  },
 
-//#define LOG_GROUP_START_SYNC(NAME, LOCK) LOG_ADD_GROUP(LOG_GROUP | LOG_START, NAME, LOCK);
+#define LOG_ADD_GROUP(TYPE, NAME, ADDRESS)                                     \
+  {                                                                            \
+      .type = TYPE,                                                            \
+      .name = #NAME,                                                           \
+      .address = (void *)(ADDRESS),                                            \
+  },
 
-#define LOG_GROUP_STOP(NAME) \
-  LOG_ADD_GROUP(LOG_GROUP | LOG_STOP, stop_##NAME, 0x0) \
-  };
+#define LOG_ADD_GROUP_CPP(TYPE, NAME, ADDRESS)                                 \
+  {                                                                            \
+      .type = TYPE,                                                            \
+      .name = const_cast<char *>(STRINGIFY(NAME)),                             \
+      .address = (void *)(ADDRESS),                                            \
+  },
+
+#define LOG_GROUP_START(NAME)                                                  \
+  static const struct log_s __logs_##NAME[]                                    \
+      __attribute__((section(".log." #NAME), used)) = {                        \
+          LOG_ADD_GROUP(LOG_GROUP | LOG_START, NAME, 0x0)
+
+#define LOG_GROUP_STOP(NAME)                                                   \
+  LOG_ADD_GROUP(LOG_GROUP | LOG_STOP, stop_##NAME, 0x0)                        \
+  }                                                                            \
+  ;
+
+#define LOG_GROUP_START_CPP(NAME)                                              \
+  static const struct log_s __logs_##NAME[]                                    \
+      __attribute__((section(".log." #NAME), used)) = {                        \
+          LOG_ADD_GROUP_CPP(LOG_GROUP | LOG_START, NAME, 0x0)
+
+//#define LOG_GROUP_START_SYNC(NAME, LOCK) LOG_ADD_GROUP(LOG_GROUP | LOG_START,
+// NAME, LOCK);
+
+#define LOG_GROUP_STOP_CPP(NAME)                                               \
+  LOG_ADD_GROUP_CPP(LOG_GROUP | LOG_STOP, stop_##NAME, 0x0)                    \
+  }                                                                            \
+  ;
 
 #ifdef CONFIG_DEBUG_LOG_ENABLE
 #define LOG_ADD_DEBUG(TYPE, NAME, ADDRESS)
@@ -207,11 +258,12 @@ typedef struct {
 
 #endif // UNIT_TEST_MODE
 
-// Do not remove! This definition is used by doxygen to generate log documentation.
+// Do not remove! This definition is used by doxygen to generate log
+// documentation.
 /** @brief Core log variables
  *
- * The core log variables are considered part of the official API and are guaranteed
- * to be stable over time.
+ * The core log variables are considered part of the official API and are
+ * guaranteed to be stable over time.
  *
  * @defgroup LOG_CORE_GROUP */
 
