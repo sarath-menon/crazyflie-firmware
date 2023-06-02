@@ -16,4 +16,4 @@ target_include_directories(
 
 target_link_libraries(${EXEC_NAME} PRIVATE Threads::Threads)
 
-target_compile_options(${EXEC_NAME} PUBLIC -DSITL_CF2)
+target_compile_options(${EXEC_NAME} PUBLIC -DSITL_CF2 -DCRAZYFLIE_FW)
