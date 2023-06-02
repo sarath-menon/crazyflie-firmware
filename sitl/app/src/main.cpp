@@ -15,7 +15,7 @@ extern "C" {
 
 /* Project includes */
 #include "config.h"
-#include "platform.h"
+// #include "platform.h"
 }
 
 void vTask1(void *pvParameters);
