@@ -114,7 +114,7 @@ PROG ?= /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmwar
 ifeq ($(CONFIG_DEBUG),y)
 ARCH_CFLAGS	+= -O0 -Wconversion
 else
-ARCH_CFLAGS += -Os -Werror
+ARCH_CFLAGS += -Os -Wall
 endif
 
 _all:
