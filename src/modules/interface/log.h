@@ -24,6 +24,8 @@
  * log.h - Dynamic log system
  */
 
+#ifndef SITL_CF2
+
 #ifndef __LOG_H__
 #define __LOG_H__
 
@@ -185,7 +187,7 @@ typedef struct {
 #define LOG_ADD_CORE(TYPE, NAME, ADDRESS)                                      \
   LOG_ADD(TYPE | LOG_CORE, NAME, ADDRESS)
 
-#define LOG_ADD_CORE_CPP(TYPE, NAME, ADDRESS)                                      \
+#define LOG_ADD_CORE_CPP(TYPE, NAME, ADDRESS)                                  \
   LOG_ADD_CPP(TYPE | LOG_CORE, NAME, ADDRESS)
 
 #define LOG_ADD_BY_FUNCTION(TYPE, NAME, ADDRESS)                               \
@@ -195,10 +197,10 @@ typedef struct {
       .address = (void *)(ADDRESS),                                            \
   },
 
-#define LOG_ADD_BY_FUNCTION_CPP(TYPE, NAME, ADDRESS)                               \
+#define LOG_ADD_BY_FUNCTION_CPP(TYPE, NAME, ADDRESS)                           \
   {                                                                            \
       .type = TYPE | LOG_BY_FUNCTION,                                          \
-      .name = const_cast<char *>(STRINGIFY(NAME)),                                                           \
+      .name = const_cast<char *>(STRINGIFY(NAME)),                             \
       .address = (void *)(ADDRESS),                                            \
   },
 
@@ -268,3 +270,5 @@ typedef struct {
  * @defgroup LOG_CORE_GROUP */
 
 #endif /* __LOG_H__ */
+
+#endif

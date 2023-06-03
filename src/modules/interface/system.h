@@ -1,6 +1,6 @@
 /*
- *    ||          ____  _ __                           
- * +------+      / __ )(_) /_______________ _____  ___ 
+ *    ||          ____  _ __
+ * +------+      / __ )(_) /_______________ _____  ___
  * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
@@ -29,13 +29,14 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
+#ifndef SITL_CF2
 #include "uart_syslink.h"
 
 void systemInit(void);
 bool systemTest(void);
 
 void systemLaunch(void);
-
 
 void systemStart();
 void systemWaitStart(void);
@@ -45,5 +46,10 @@ bool systemIsArmed();
 void systemRequestShutdown();
 void systemRequestNRFVersion();
 void systemSyslinkReceive(SyslinkPacket *slp);
+
+#else
+void systemInit(void);
+void systemLaunch(void);
+#endif
 
 #endif //__SYSTEM_H__

@@ -23,6 +23,7 @@
  *
  * param.h - Crazy parameter system header file.
  */
+#ifndef SITL_CF2
 
 #pragma once
 
@@ -204,3 +205,5 @@ typedef float *(*paramGetterFloat)(void);
  * guaranteed to be stable over time.
  *
  * @defgroup PARAM_CORE_GROUP */
+
+#endif
