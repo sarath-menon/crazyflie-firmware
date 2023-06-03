@@ -58,6 +58,8 @@ extern "C" {
 #include "usddeck.h"
 }
 
+#include "static_task.hpp"
+
 static bool isInit;
 
 // static uint32_t inToOutLatency;
@@ -86,6 +88,16 @@ static rateSupervisor_t rateSupervisorContext;
 
 static void stabilizerTask(void *param);
 
+// // Buffer that the task being created will use as its stack.
+// static StackType_t xStack[STABILIZER_TASK_STACKSIZE];
+// static char task_name[] = STABILIZER_TASK_NAME;
+// StaticTask task_1(stabilizerTask, task_name, STABILIZER_TASK_STACKSIZE,
+// xStack); auto xHandle = task_1.get_handle();
+
+static StackType_t xStack[STABILIZER_TASK_STACKSIZE];
+static StaticTask_t xTaskBuffer;
+static TaskHandle_t xHandle = NULL;
+
 // static void calcSensorToOutputLatency(const sensorData_t *sensorData)
 // {
 //   uint64_t outTimestamp = usecTimestamp();
@@ -109,8 +121,18 @@ void stabilizerInit(StateEstimatorType estimator) {
   // STABILIZER_TASK_NAME,
   //                        NULL, STABILIZER_TASK_PRI);
 
-  xTaskCreate(stabilizerTask, STABILIZER_TASK_NAME, STABILIZER_TASK_STACKSIZE,
-              NULL, STABILIZER_TASK_PRI, NULL);
+  // xTaskCreate(stabilizerTask, STABILIZER_TASK_NAME,
+  // STABILIZER_TASK_STACKSIZE,
+  //             NULL, STABILIZER_TASK_PRI, NULL);
+
+  xHandle = xTaskCreateStatic(
+      stabilizerTask,            /* Function that implements the task. */
+      STABILIZER_TASK_NAME,      /* Text name for the task. */
+      STABILIZER_TASK_STACKSIZE, /* Number of indexes in the xStack array. */
+      (void *)1,                 /* Parameter passed into the task. */
+      STABILIZER_TASK_PRI,       /* Priority at which the task is created. */
+      xStack,                    /* Array to use as the task's stack. */
+      &xTaskBuffer); /* Variable to hold the task's data structure. */
 
   isInit = true;
 }
