@@ -16,21 +16,21 @@ extern "C" {
 
 #include "stabilizer.h"
 
-// #include "commander.h"
-// #include "crtp_commander_high_level.h"
-#include "sensors.h"
+#include "collision_avoidance.h"
+#include "commander.h"
+#include "controller.h"
+#include "crtp_commander_high_level.h"
 // #include "crtp_localization_service.h"
-// #include "collision_avoidance.h"
-// #include "controller.h"
-// #include "health.h"
-// #include "power_distribution.h"
+#include "health.h"
+#include "power_distribution.h"
+#include "sensors.h"
 #include "supervisor.h"
 
 #include "estimator.h"
-// #include "quatcompress.h"
+#include "quatcompress.h"
 #include "rateSupervisor.h"
-// #include "static_mem.h"
-// #include "statsCnt.h"
+#include "static_mem.h"
+#include "statsCnt.h"
 // #include "usddeck.h"
 }
 
@@ -38,27 +38,27 @@ extern "C" {
 
 static bool isInit;
 
-// static uint32_t inToOutLatency;
+static uint32_t inToOutLatency;
 
 // State variables for the stabilizer
-// static setpoint_t setpoint;
+static setpoint_t setpoint;
 static sensorData_t sensorData;
 static state_t state;
-// static control_t control;
+static control_t control;
 
-// static motors_thrust_uncapped_t motorThrustUncapped;
-// static motors_thrust_uncapped_t motorThrustBatCompUncapped;
-// static motors_thrust_pwm_t motorPwm;
+static motors_thrust_uncapped_t motorThrustUncapped;
+static motors_thrust_uncapped_t motorThrustBatCompUncapped;
+static motors_thrust_pwm_t motorPwm;
 
 // For scratch storage - never logged or passed to other subsystems.
-// static setpoint_t tempSetpoint;
+static setpoint_t tempSetpoint;
 
 static StateEstimatorType estimatorType;
-// static ControllerType controllerType;
+static ControllerType controllerType;
 
-// static STATS_CNT_RATE_DEFINE(stabilizerRate, 500);
+static STATS_CNT_RATE_DEFINE(stabilizerRate, 500);
 static rateSupervisor_t rateSupervisorContext;
-// static bool rateWarningDisplayed = false;
+static bool rateWarningDisplayed = false;
 
 // STATIC_MEM_TASK_ALLOC(stabilizerTask, STABILIZER_TASK_STACKSIZE);
 
@@ -73,11 +73,10 @@ static void stabilizerTask(void *param);
 static StackType_t xStack[STABILIZER_TASK_STACKSIZE];
 static StaticTask_t xTaskBuffer;
 
-// static void calcSensorToOutputLatency(const sensorData_t *sensorData)
-// {
-//   uint64_t outTimestamp = usecTimestamp();
-//   inToOutLatency = outTimestamp - sensorData->interruptTimestamp;
-// }
+static void calcSensorToOutputLatency(const sensorData_t *sensorData) {
+  uint64_t outTimestamp = usecTimestamp();
+  inToOutLatency = outTimestamp - sensorData->interruptTimestamp;
+}
 
 void stabilizerInit(StateEstimatorType estimator) {
   if (isInit)
@@ -214,6 +213,7 @@ static void stabilizerTask(void *param) {
     // DEBUG_PRINT("Pitch from estimator: %f deg\n",
     // (double)state.attitude.pitch);
 
+    // DEBUG_PRINT("selva");
     // const bool areMotorsAllowedToRun = supervisorAreMotorsAllowedToRun();
 
     // // Critical for safety, be careful if you modify this code!
