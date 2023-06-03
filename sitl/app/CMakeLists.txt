@@ -6,7 +6,7 @@ set(EXEC_NAME cf_sitl)
 
 set(APP_INCLUDE_DIRS include)
 
-set(APP_SRCS src/main.cpp)
+set(APP_SRCS src/main.c)
 
 add_executable(${EXEC_NAME} ${APP_SRCS} ${FREERTOS_SRCS} ${CF2_SRCS})
 

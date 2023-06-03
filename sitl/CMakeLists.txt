@@ -27,30 +27,29 @@ set(FREERTOS_SRCS
     ${FREERTOS_SRC_DIR}/portable/ThirdParty/GCC/Posix/utils/wait_for_event.c)
 
 set(CF2_INCLUDE_DIRS
-    ${CF2_SRCS_DIR}/src/hal/interface
-    ${CF2_SRCS_DIR}/src/modules/interface
-    ${CF2_SRCS_DIR}/platform
+    # ${CF2_SRCS_DIR}/src/hal/interface
+    # ${CF2_SRCS_DIR}/platform
+    # ${CF2_SRCS_DIR}/src/utils/interface
     ${CF2_SRCS_DIR}/src/utils/interface
-    ${CF2_SRCS_DIR}/src/utils/interface
-    ${CF2_SRCS_DIR}/src/deck/interface
-    ${CF2_SRCS_DIR}/src/deck/drivers/interface
+    # ${CF2_SRCS_DIR}/src/deck/interface #
+    # ${CF2_SRCS_DIR}/src/deck/drivers/interface
     ${CF2_SRCS_DIR}/src/config
     ${CF2_SRCS_DIR}/src/modules/interface
-    ${CF2_SRCS_DIR}/src/modules/interface/controller
+    # ${CF2_SRCS_DIR}/src/modules/interface/controller
+    # ${CF2_SRCS_DIR}/src/modules/interface/estimator
+    ${CF2_SRCS_DIR}/src/hal/interface
     ${CF2_SRCS_DIR}/src/modules/interface/estimator
-    ${CF2_SRCS_DIR}/src/hal/interface
     ${CF2_SRCS_DIR}/src/utils/interface/lighthouse
-    ${CF2_SRCS_DIR}/src/utils/interface
-    ${CF2_SRCS_DIR}/src/config
-    ${CF2_SRCS_DIR}/src/drivers/interface
-    ${CF2_SRCS_DIR}/src/platform/interface
-    ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/DSP/Include
-    ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/Core/Include
+    # ${CF2_SRCS_DIR}/src/utils/interface ${CF2_SRCS_DIR}/src/config
+    # ${CF2_SRCS_DIR}/src/drivers/interface
+    # ${CF2_SRCS_DIR}/src/platform/interface
+    # ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/DSP/Include
+    # ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/Core/Include
     ${CF2_SRCS_DIR}/build/include/generated)
 
 set(CF2_SRCS
     # Mine
-    ${CF2_SRCS_DIR}/src/hal/src/usec_time_sim.c
+    # ${CF2_SRCS_DIR}/src/hal/src/usec_time_sim.c
     # Original
     # ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/DSP/Source/BasicMathFunctions/arm_add_f32
     # ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/DSP/Source/BasicMathFunctions/arm_dot_prod_f32
@@ -67,21 +66,22 @@ set(CF2_SRCS
     # ${CF2_SRCS_DIR}/src/modules/src/pptraj_compressed.c
     # ${CF2_SRCS_DIR}/src/modules/src/planner.c
     # ${CF2_SRCS_DIR}/src/modules/src/collision_avoidance.c
-    # ${CF2_SRCS_DIR}/src/modules/src/stabilizer.cpp
-    ${CF2_SRCS_DIR}/src/modules/src/controller/controller.c
-    ${CF2_SRCS_DIR}/src/modules/src/controller/controller_pid.c
-    ${CF2_SRCS_DIR}/src/modules/src/controller/position_controller_pid.c
-    ${CF2_SRCS_DIR}/src/modules/src/controller/position_controller_indi.c
-    ${CF2_SRCS_DIR}/src/modules/src/controller/attitude_pid_controller.c
-    ${CF2_SRCS_DIR}/src/modules/src/controller/controller_mellinger.c
-    ${CF2_SRCS_DIR}/src/modules/src/controller/controller_indi.c
-    ${CF2_SRCS_DIR}/src/modules/src/controller/controller_brescianini.c
-    ${CF2_SRCS_DIR}/src/utils/src/pid.c
-    ${CF2_SRCS_DIR}/src/utils/src/num.c
-    ${CF2_SRCS_DIR}/src/utils/src/filter.c
-    ${CF2_SRCS_DIR}/src/utils/src/num.c
-    ${CF2_SRCS_DIR}/src/modules/src/power_distribution_quadrotor.c
-    # I/O ${CF2_SRCS_DIR}/src/utils/src/eprintf.c
+    ${CF2_SRCS_DIR}/src/modules/src/stabilizer_sitl.cpp
+    ${CF2_SRCS_DIR}/src/modules/src/system_sitl.cpp
+    ${CF2_SRCS_DIR}/src/utils/src/rateSupervisor.c
+    ${CF2_SRCS_DIR}/src/modules/src/static_mem_sitl.c
+    # ${CF2_SRCS_DIR}/src/modules/src/controller/controller.c
+    # ${CF2_SRCS_DIR}/src/modules/src/controller/controller_pid.c
+    # ${CF2_SRCS_DIR}/src/modules/src/controller/position_controller_pid.c
+    # ${CF2_SRCS_DIR}/src/modules/src/controller/position_controller_indi.c
+    # ${CF2_SRCS_DIR}/src/modules/src/controller/attitude_pid_controller.c
+    # ${CF2_SRCS_DIR}/src/modules/src/controller/controller_mellinger.c
+    # ${CF2_SRCS_DIR}/src/modules/src/controller/controller_indi.c
+    # ${CF2_SRCS_DIR}/src/modules/src/controller/controller_brescianini.c
+    # ${CF2_SRCS_DIR}/src/utils/src/pid.c ${CF2_SRCS_DIR}/src/utils/src/num.c
+    # ${CF2_SRCS_DIR}/src/utils/src/filter.c ${CF2_SRCS_DIR}/src/utils/src/num.c
+    # ${CF2_SRCS_DIR}/src/modules/src/power_distribution_quadrotor.c I/O
+    # ${CF2_SRCS_DIR}/src/utils/src/eprintf.c
     # ${CF2_SRCS_DIR}/src/modules/src/console.c
     # ${CF2_SRCS_DIR}/src/modules/src/crtp.c
 )
