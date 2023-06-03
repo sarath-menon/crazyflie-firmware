@@ -98,7 +98,11 @@ static uint8_t testLogParam;
 extern "C" void vApplicationIdleHook(void);
 extern "C" void systemSyslinkReceive(SyslinkPacket *slp);
 
-STATIC_MEM_TASK_ALLOC(systemTask, SYSTEM_TASK_STACKSIZE);
+// for system task
+static StackType_t xStack[SYSTEM_TASK_STACKSIZE];
+static StaticTask_t xTaskBuffer;
+
+// STATIC_MEM_TASK_ALLOC(systemTask, SYSTEM_TASK_STACKSIZE);
 
 /* System wide synchronisation */
 xSemaphoreHandle canStartMutex;
@@ -109,8 +113,17 @@ static void systemTask(void *arg);
 
 /* Public functions */
 void systemLaunch(void) {
-  STATIC_MEM_TASK_CREATE(systemTask, systemTask, SYSTEM_TASK_NAME, NULL,
-                         SYSTEM_TASK_PRI);
+  // STATIC_MEM_TASK_CREATE(systemTask, systemTask, SYSTEM_TASK_NAME, NULL,
+  //                        SYSTEM_TASK_PRI);
+
+  auto xHandle = xTaskCreateStatic(
+      systemTask,            /* Function that implements the task. */
+      SYSTEM_TASK_NAME,      /* Text name for the task. */
+      SYSTEM_TASK_STACKSIZE, /* Number of indexes in the xStack array. */
+      (void *)1,             /* Parameter passed into the task. */
+      SYSTEM_TASK_PRI,       /* Priority at which the task is created. */
+      xStack,                /* Array to use as the task's stack. */
+      &xTaskBuffer);         /* Variable to hold the task's data structure. */
 }
 
 // This must be the first module to be initialized!
