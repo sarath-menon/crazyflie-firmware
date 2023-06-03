@@ -6,10 +6,10 @@ extern "C" {
 #include "FreeRTOS.h"
 #include "task.h"
 
-// #include "debug.h"
-#include "log_sitl.h"
+#include "debug.h"
+#include "log.h"
 // #include "motors.h"
-#include "param_sitl.h"
+#include "param.h"
 // #include "platform.h"
 // #include "pm.h"
 #include "system.h"

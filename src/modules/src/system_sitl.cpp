@@ -8,7 +8,7 @@ extern "C" {
 #include "task.h"
 
 // #include "config.h"
-// #include "debug.h"
+#include "debug.h"
 // #include "ledseq.h"
 #include "log.h"
 #include "param.h"
