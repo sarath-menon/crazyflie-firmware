@@ -85,7 +85,7 @@ set(CF2_SRCS
     ${CF2_SRCS_DIR}/src/utils/src/num.c
     ${CF2_SRCS_DIR}/src/utils/src/filter.c
     ${CF2_SRCS_DIR}/src/utils/src/num.c
-    # ${CF2_SRCS_DIR}/src/modules/src/power_distribution_quadrotor.c I/O
+    ${CF2_SRCS_DIR}/src/modules/src/power_distribution_quadrotor.c
     ${CF2_SRCS_DIR}/src/utils/src/eprintf.c
     ${CF2_SRCS_DIR}/src/modules/src/console.c
     ${CF2_SRCS_DIR}/src/modules/src/crtp.c
