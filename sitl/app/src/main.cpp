@@ -43,3 +43,20 @@ void vTask2(void *pvParameters) {
     vTaskDelay(pdMS_TO_TICKS(1000));
   }
 }
+
+*FreeRTOS assert name * /
+    void vAssertCalled(unsigned long ulLine, const char *const pcFileName) {
+  printf("ASSERT: %s : %d\n", pcFileName, (int)ulLine);
+  while (1)
+    ;
+}
+
+unsigned long ulGetRunTimeCounterValue(void) { return 0; }
+
+void vConfigureTimerForRunTimeStats(void) { return; }
+
+/* For memory management */
+void vApplicationMallocFailedHook(void) {
+  while (1)
+    ;
+}
