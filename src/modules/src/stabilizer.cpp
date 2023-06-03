@@ -96,7 +96,6 @@ static void stabilizerTask(void *param);
 
 static StackType_t xStack[STABILIZER_TASK_STACKSIZE];
 static StaticTask_t xTaskBuffer;
-static TaskHandle_t xHandle = NULL;
 
 // static void calcSensorToOutputLatency(const sensorData_t *sensorData)
 // {
@@ -125,7 +124,7 @@ void stabilizerInit(StateEstimatorType estimator) {
   // STABILIZER_TASK_STACKSIZE,
   //             NULL, STABILIZER_TASK_PRI, NULL);
 
-  xHandle = xTaskCreateStatic(
+  auto xHandle = xTaskCreateStatic(
       stabilizerTask,            /* Function that implements the task. */
       STABILIZER_TASK_NAME,      /* Text name for the task. */
       STABILIZER_TASK_STACKSIZE, /* Number of indexes in the xStack array. */
