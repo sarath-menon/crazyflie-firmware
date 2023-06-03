@@ -82,7 +82,7 @@ static ControllerType controllerType;
 static rateSupervisor_t rateSupervisorContext;
 // static bool rateWarningDisplayed = false;
 
-STATIC_MEM_TASK_ALLOC(stabilizerTask, STABILIZER_TASK_STACKSIZE);
+// STATIC_MEM_TASK_ALLOC(stabilizerTask, STABILIZER_TASK_STACKSIZE);
 
 static void stabilizerTask(void *param);
 
@@ -105,8 +105,12 @@ void stabilizerInit(StateEstimatorType estimator) {
   estimatorType = stateEstimatorGetType();
   controllerType = controllerGetType();
 
-  STATIC_MEM_TASK_CREATE(stabilizerTask, stabilizerTask, STABILIZER_TASK_NAME,
-                         NULL, STABILIZER_TASK_PRI);
+  // STATIC_MEM_TASK_CREATE(stabilizerTask, stabilizerTask,
+  // STABILIZER_TASK_NAME,
+  //                        NULL, STABILIZER_TASK_PRI);
+
+  xTaskCreate(stabilizerTask, STABILIZER_TASK_NAME, STABILIZER_TASK_STACKSIZE,
+              NULL, STABILIZER_TASK_PRI, NULL);
 
   isInit = true;
 }
