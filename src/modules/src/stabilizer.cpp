@@ -58,8 +58,6 @@ extern "C" {
 #include "usddeck.h"
 }
 
-#include "static_task.hpp"
-
 static bool isInit;
 
 // static uint32_t inToOutLatency;
