@@ -44,8 +44,8 @@ void vTask2(void *pvParameters) {
   }
 }
 
-*FreeRTOS assert name * /
-    void vAssertCalled(unsigned long ulLine, const char *const pcFileName) {
+// *FreeRTOS assert name * /
+void vAssertCalled(unsigned long ulLine, const char *const pcFileName) {
   printf("ASSERT: %s : %d\n", pcFileName, (int)ulLine);
   while (1)
     ;
