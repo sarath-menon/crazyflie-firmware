@@ -281,24 +281,24 @@ static void stabilizerTask(void *param) {
   }
 }
 
-// /**
-//  * Parameters to set the estimator and controller type
-//  * for the stabilizer module
-//  */
-// PARAM_GROUP_START(stabilizer)
-// /**
-//  * @brief Estimator type Auto select(0), complementary(1), extended
-//  kalman(2), **unscented kalman(3)  (Default: 0)
-//  *
-//  * ** Experimental, needs to be enabled in kbuild
-//  */
-// PARAM_ADD_CORE(PARAM_UINT8, estimator, &estimatorType)
-// /**
-//  * @brief Controller type Auto select(0), PID(1), Mellinger(2), INDI(3),
-//  Brescianini(4) (Default: 0)
-//  */
-// PARAM_ADD_CORE(PARAM_UINT8, controller, &controllerType)
-// PARAM_GROUP_STOP(stabilizer)
+/**
+ * Parameters to set the estimator and controller type
+ * for the stabilizer module
+ */
+PARAM_GROUP_START_CPP(stabilizer)
+/**
+ * @brief Estimator type Auto select(0), complementary(1), extended
+ kalman(2), **unscented kalman(3)  (Default: 0)
+ *
+ * ** Experimental, needs to be enabled in kbuild
+ */
+PARAM_ADD_CORE_CPP(PARAM_UINT8, estimator, &estimatorType)
+/**
+ * @brief Controller type Auto select(0), PID(1), Mellinger(2), INDI(3),
+ Brescianini(4) (Default: 0)
+ */
+PARAM_ADD_CORE_CPP(PARAM_UINT8, controller, &controllerType)
+PARAM_GROUP_STOP_CPP(stabilizer)
 
 // /**
 //  * Log group for the current controller target

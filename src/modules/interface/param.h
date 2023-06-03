@@ -124,8 +124,8 @@ typedef float *(*paramGetterFloat)(void);
       .extended_type = (((TYPE)&0xFF00) >> 8),                                 \
       .name = const_cast<char *>(STRINGIFY(NAME)),                             \
       .address = (void *)(ADDRESS),                                            \
-      .callback = (void *)CALLBACK,                                            \
-      .getter = (void *)DEFAULT_GETTER,                                        \
+      .callback = (void (*)())CALLBACK,                                        \
+      .getter = (void *(*)())DEFAULT_GETTER,                                   \
   },
 
 #define PARAM_ADD(TYPE, NAME, ADDRESS) PARAM_ADD_FULL(TYPE, NAME, ADDRESS, 0, 0)
