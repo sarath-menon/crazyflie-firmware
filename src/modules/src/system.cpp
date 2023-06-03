@@ -24,65 +24,66 @@
  * system.c - Top level module implementation
  */
 #define DEBUG_MODULE "SYS"
-
+extern "C" {
 #include <stdbool.h>
 
 /* FreeRtos includes */
 #include "FreeRTOS.h"
-#include "task.h"
 #include "semphr.h"
+#include "task.h"
 
+#include "config.h"
 #include "debug.h"
-#include "version.h"
-#include "config.h"
-#include "param.h"
-#include "log.h"
 #include "ledseq.h"
+#include "log.h"
+#include "param.h"
 #include "pm.h"
+#include "version.h"
 
-#include "config.h"
-#include "system.h"
-#include "platform.h"
-#include "storage.h"
-#include "configblock.h"
-#include "worker.h"
-#include "freeRTOSdebug.h"
-#include "uart_syslink.h"
-#include "uart1.h"
-#include "uart2.h"
-#include "comm.h"
-#include "stabilizer.h"
-#include "commander.h"
-#include "console.h"
-#include "usblink.h"
-#include "mem.h"
-#include "crtp_mem.h"
-#include "proximity.h"
-#include "watchdog.h"
-#include "queuemonitor.h"
+#include "app.h"
+#include "autoconf.h"
 #include "buzzer.h"
-#include "sound.h"
-#include "sysload.h"
+#include "cfassert.h"
+#include "comm.h"
+#include "commander.h"
+#include "config.h"
+#include "configblock.h"
+#include "console.h"
+#include "crtp_mem.h"
+#include "deck.h"
 #include "estimator_kalman.h"
 #include "estimator_ukf.h"
-#include "deck.h"
 #include "extrx.h"
-#include "app.h"
-#include "static_mem.h"
-#include "peer_localization.h"
-#include "cfassert.h"
+#include "freeRTOSdebug.h"
 #include "i2cdev.h"
-#include "autoconf.h"
+#include "mem.h"
+#include "peer_localization.h"
+#include "platform.h"
+#include "proximity.h"
+#include "queuemonitor.h"
+#include "sound.h"
+#include "stabilizer.h"
+#include "static_mem.h"
+#include "storage.h"
+#include "sysload.h"
+#include "system.h"
+#include "uart1.h"
+#include "uart2.h"
+#include "uart_syslink.h"
+#include "usblink.h"
 #include "vcp_esc_passthrough.h"
+#include "watchdog.h"
+#include "worker.h"
 #if CONFIG_ENABLE_CPX
-  #include "cpxlink.h"
+#include "cpxlink.h"
 #endif
 
 #ifndef CONFIG_MOTORS_REQUIRE_ARMING
-  #define ARMING_REQUIRED true
+#define ARMING_REQUIRED true
 #else
-  #define ARMING_REQUIRED false
+#define ARMING_REQUIRED false
 #endif
+}
 
 /* Private variable */
 static bool selftestPassed;
@@ -92,6 +93,10 @@ static bool isInit;
 
 static char nrf_version[16];
 static uint8_t testLogParam;
+
+// C++ funcitons to be used in other C filesextern "C"
+extern "C" void vApplicationIdleHook(void);
+extern "C" void systemSyslinkReceive(SyslinkPacket *slp);
 
 STATIC_MEM_TASK_ALLOC(systemTask, SYSTEM_TASK_STACKSIZE);
 
@@ -103,15 +108,14 @@ static StaticSemaphore_t canStartMutexBuffer;
 static void systemTask(void *arg);
 
 /* Public functions */
-void systemLaunch(void)
-{
-  STATIC_MEM_TASK_CREATE(systemTask, systemTask, SYSTEM_TASK_NAME, NULL, SYSTEM_TASK_PRI);
+void systemLaunch(void) {
+  STATIC_MEM_TASK_CREATE(systemTask, systemTask, SYSTEM_TASK_NAME, NULL,
+                         SYSTEM_TASK_PRI);
 }
 
 // This must be the first module to be initialized!
-void systemInit(void)
-{
-  if(isInit)
+void systemInit(void) {
+  if (isInit)
     return;
 
   canStartMutex = xSemaphoreCreateMutexStatic(&canStartMutexBuffer);
@@ -134,12 +138,13 @@ void systemInit(void)
   if (V_PRODUCTION_RELEASE) {
     DEBUG_PRINT("Production release %s\n", V_STAG);
   } else {
-    DEBUG_PRINT("Build %s:%s (%s) %s\n", V_SLOCAL_REVISION,
-                V_SREVISION, V_STAG, (V_MODIFIED)?"MODIFIED":"CLEAN");
+    DEBUG_PRINT("Build %s:%s (%s) %s\n", V_SLOCAL_REVISION, V_SREVISION, V_STAG,
+                (V_MODIFIED) ? "MODIFIED" : "CLEAN");
   }
   DEBUG_PRINT("I am 0x%08X%08X%08X and I have %dKB of flash!\n",
-              *((int*)(MCU_ID_ADDRESS+8)), *((int*)(MCU_ID_ADDRESS+4)),
-              *((int*)(MCU_ID_ADDRESS+0)), *((short*)(MCU_FLASH_SIZE_ADDRESS)));
+              *((int *)(MCU_ID_ADDRESS + 8)), *((int *)(MCU_ID_ADDRESS + 4)),
+              *((int *)(MCU_ID_ADDRESS + 0)),
+              *((short *)(MCU_FLASH_SIZE_ADDRESS)));
 
   configblockInit();
   storageInit();
@@ -157,9 +162,8 @@ void systemInit(void)
   isInit = true;
 }
 
-bool systemTest()
-{
-  bool pass=isInit;
+bool systemTest() {
+  bool pass = isInit;
 
   pass &= ledseqTest();
   pass &= pmTest();
@@ -170,8 +174,7 @@ bool systemTest()
 
 /* Private functions implementation */
 
-void systemTask(void *arg)
-{
+void systemTask(void *arg) {
   bool pass = true;
 
   ledInit();
@@ -190,31 +193,32 @@ void systemTask(void *arg)
   i2cdevInit(I2C1_DEV);
   passthroughInit();
 
-  //Init the high-levels modules
+  // Init the high-levels modules
   systemInit();
   commInit();
   commanderInit();
 
   StateEstimatorType estimator = StateEstimatorTypeAutoSelect;
 
-  #ifdef CONFIG_ESTIMATOR_KALMAN_ENABLE
+#ifdef CONFIG_ESTIMATOR_KALMAN_ENABLE
   estimatorKalmanTaskInit();
-  #endif
+#endif
 
-  #ifdef CONFIG_ESTIMATOR_UKF_ENABLE
+#ifdef CONFIG_ESTIMATOR_UKF_ENABLE
   errorEstimatorUkfTaskInit();
-  #endif
+#endif
 
   // Enabling incoming syslink messages to be added to the queue.
-  // This should probably be done later, but deckInit() takes a long time if this is done later.
+  // This should probably be done later, but deckInit() takes a long time if
+  // this is done later.
   uartslkEnableIncoming();
 
   memInit();
   deckInit();
   estimator = deckGetRequiredEstimator();
   stabilizerInit(estimator);
-  if (deckGetRequiredLowInterferenceRadioMode() && platformConfigPhysicalLayoutAntennasAreClose())
-  {
+  if (deckGetRequiredLowInterferenceRadioMode() &&
+      platformConfigPhysicalLayoutAntennasAreClose()) {
     platformSetLowInterferenceRadioMode();
   }
   soundInit();
@@ -226,7 +230,7 @@ void systemTask(void *arg)
 
   systemRequestNRFVersion();
 
-  //Test the modules
+  // Test the modules
   DEBUG_PRINT("About to run tests in system.c.\n");
   if (systemTest() == false) {
     pass = false;
@@ -253,19 +257,19 @@ void systemTask(void *arg)
     DEBUG_PRINT("stabilizer [FAIL]\n");
   }
 
-  #ifdef CONFIG_ESTIMATOR_KALMAN_ENABLE
+#ifdef CONFIG_ESTIMATOR_KALMAN_ENABLE
   if (estimatorKalmanTaskTest() == false) {
     pass = false;
     DEBUG_PRINT("estimatorKalmanTask [FAIL]\n");
   }
-  #endif
+#endif
 
-  #ifdef CONFIG_ESTIMATOR_UKF_ENABLE
+#ifdef CONFIG_ESTIMATOR_UKF_ENABLE
   if (errorEstimatorUkfTaskTest() == false) {
     pass = false;
     DEBUG_PRINT("estimatorUKFTask [FAIL]\n");
   }
-  #endif
+#endif
 
   if (deckTest() == false) {
     pass = false;
@@ -296,36 +300,29 @@ void systemTask(void *arg)
     DEBUG_PRINT("peerLocalization [FAIL]\n");
   }
 
-  //Start the firmware
-  if(pass)
-  {
+  // Start the firmware
+  if (pass) {
     DEBUG_PRINT("Self test passed!\n");
     selftestPassed = 1;
     systemStart();
     soundSetEffect(SND_STARTUP);
     ledseqRun(&seq_alive);
     ledseqRun(&seq_testPassed);
-  }
-  else
-  {
+  } else {
     selftestPassed = 0;
-    if (systemTest())
-    {
-      while(1)
-      {
+    if (systemTest()) {
+      while (1) {
         ledseqRun(&seq_testFailed);
         vTaskDelay(M2T(2000));
-        // System can be forced to start by setting the param to 1 from the cfclient
-        if (selftestPassed)
-        {
-	        DEBUG_PRINT("Start forced.\n");
+        // System can be forced to start by setting the param to 1 from the
+        // cfclient
+        if (selftestPassed) {
+          DEBUG_PRINT("Start forced.\n");
           systemStart();
           break;
         }
       }
-    }
-    else
-    {
+    } else {
       ledInit();
       ledSet(SYS_LED, true);
     }
@@ -334,34 +331,30 @@ void systemTask(void *arg)
 
   workerLoop();
 
-  //Should never reach this point!
-  while(1)
+  // Should never reach this point!
+  while (1)
     vTaskDelay(portMAX_DELAY);
 }
 
-
 /* Global system variables */
-void systemStart()
-{
+void systemStart() {
   xSemaphoreGive(canStartMutex);
 #ifndef DEBUG
   watchdogInit();
 #endif
 }
 
-void systemWaitStart(void)
-{
-  //This permits to guarantee that the system task is initialized before other
-  //tasks waits for the start event.
-  while(!isInit)
+void systemWaitStart(void) {
+  // This permits to guarantee that the system task is initialized before other
+  // tasks waits for the start event.
+  while (!isInit)
     vTaskDelay(2);
 
   xSemaphoreTake(canStartMutex, portMAX_DELAY);
   xSemaphoreGive(canStartMutex);
 }
 
-void systemSetArmed(bool val)
-{
+void systemSetArmed(bool val) {
   if (arm != val) {
     // Set using parameter to update any client
     paramVarId_t armId = paramGetVarId("system", "arm");
@@ -369,13 +362,9 @@ void systemSetArmed(bool val)
   }
 }
 
-bool systemIsArmed()
-{
-  return arm;
-}
+bool systemIsArmed() { return arm; }
 
-void systemRequestShutdown()
-{
+void systemRequestShutdown() {
   SyslinkPacket slp;
 
   slp.type = SYSLINK_PM_ONOFF_SWITCHOFF;
@@ -383,8 +372,7 @@ void systemRequestShutdown()
   syslinkSendPacket(&slp);
 }
 
-void systemRequestNRFVersion()
-{
+void systemRequestNRFVersion() {
   SyslinkPacket slp;
 
   slp.type = SYSLINK_SYS_NRF_VERSION;
@@ -392,28 +380,24 @@ void systemRequestNRFVersion()
   syslinkSendPacket(&slp);
 }
 
-void systemSyslinkReceive(SyslinkPacket *slp)
-{
-  if (slp->type == SYSLINK_SYS_NRF_VERSION)
-  {
+void systemSyslinkReceive(SyslinkPacket *slp) {
+  if (slp->type == SYSLINK_SYS_NRF_VERSION) {
     size_t len = slp->length - 1;
 
-    if (sizeof(nrf_version) - 1 <=  len) {
+    if (sizeof(nrf_version) - 1 <= len) {
       len = sizeof(nrf_version) - 1;
     }
-    memcpy(&nrf_version, &slp->data[0], len );
+    memcpy(&nrf_version, &slp->data[0], len);
     DEBUG_PRINT("NRF51 version: %s\n", nrf_version);
   }
 }
 
-void vApplicationIdleHook( void )
-{
+void vApplicationIdleHook() {
   static uint32_t tickOfLatestWatchdogReset = M2T(0);
 
   portTickType tickCount = xTaskGetTickCount();
 
-  if (tickCount - tickOfLatestWatchdogReset > M2T(WATCHDOG_RESET_PERIOD_MS))
-  {
+  if (tickCount - tickOfLatestWatchdogReset > M2T(WATCHDOG_RESET_PERIOD_MS)) {
     tickOfLatestWatchdogReset = tickCount;
     watchdogReset();
   }
@@ -426,7 +410,7 @@ void vApplicationIdleHook( void )
   // Enter sleep mode. Does not work when debugging chip with SWD.
   // Currently saves about 20mA STM32F405 current consumption (~30%).
 #ifndef DEBUG
-  { __asm volatile ("wfi"); }
+  { __asm volatile("wfi"); }
 #endif
 }
 
@@ -436,67 +420,69 @@ void vApplicationIdleHook( void )
  *
  * These could be used to identify an unique quad.
  */
-PARAM_GROUP_START(cpu)
+PARAM_GROUP_START_CPP(cpu)
 
 /**
  * @brief Size in kB of the device flash memory
  */
-PARAM_ADD_CORE(PARAM_UINT16 | PARAM_RONLY, flash, MCU_FLASH_SIZE_ADDRESS)
+PARAM_ADD_CORE_CPP(PARAM_UINT16 | PARAM_RONLY, flash, MCU_FLASH_SIZE_ADDRESS)
 
 /**
  * @brief Byte `0 - 3` of device unique id
  */
-PARAM_ADD_CORE(PARAM_UINT32 | PARAM_RONLY, id0, MCU_ID_ADDRESS+0)
+PARAM_ADD_CORE_CPP(PARAM_UINT32 | PARAM_RONLY, id0, MCU_ID_ADDRESS + 0)
 
 /**
  * @brief Byte `4 - 7` of device unique id
  */
-PARAM_ADD_CORE(PARAM_UINT32 | PARAM_RONLY, id1, MCU_ID_ADDRESS+4)
+PARAM_ADD_CORE_CPP(PARAM_UINT32 | PARAM_RONLY, id1, MCU_ID_ADDRESS + 4)
 
 /**
  * @brief Byte `8 - 11` of device unique id
  */
-PARAM_ADD_CORE(PARAM_UINT32 | PARAM_RONLY, id2, MCU_ID_ADDRESS+8)
+PARAM_ADD_CORE_CPP(PARAM_UINT32 | PARAM_RONLY, id2, MCU_ID_ADDRESS + 8)
 
-PARAM_GROUP_STOP(cpu)
+PARAM_GROUP_STOP_CPP(cpu)
 
-PARAM_GROUP_START(system)
+PARAM_GROUP_START_CPP(system)
 
 /**
  * @brief All tests passed when booting
  */
-PARAM_ADD_CORE(PARAM_INT8 | PARAM_RONLY, selftestPassed, &selftestPassed)
+PARAM_ADD_CORE_CPP(PARAM_INT8 | PARAM_RONLY, selftestPassed, &selftestPassed)
 
 /**
  * @brief Set to nonzero to arm the system
  */
-PARAM_ADD_CORE(PARAM_INT8, arm, &arm)
+PARAM_ADD_CORE_CPP(PARAM_INT8, arm, &arm)
 
 /**
  * @brief Set to nonzero to trigger dump of assert information to the log.
  */
-PARAM_ADD(PARAM_UINT8, assertInfo, &dumpAssertInfo)
+PARAM_ADD_CPP(PARAM_UINT8, assertInfo, &dumpAssertInfo)
 
 /**
- * @brief Test util for log and param. This param sets the value of the sys.testLogParam log variable.
+ * @brief Test util for log and param. This param sets the value of the
+ * sys.testLogParam log variable.
  *
  */
-PARAM_ADD(PARAM_UINT8, testLogParam, &testLogParam)
+PARAM_ADD_CPP(PARAM_UINT8, testLogParam, &testLogParam)
 
-PARAM_GROUP_STOP(system)
+PARAM_GROUP_STOP_CPP(system)
 
 /**
  *  System loggable variables to check different system states.
  */
-LOG_GROUP_START(sys)
+LOG_GROUP_START_CPP(sys)
 /**
  * @brief If zero, arming system is preventing motors to start
  */
-LOG_ADD(LOG_INT8, armed, &arm)
+LOG_ADD_CPP(LOG_INT8, armed, &arm)
 
 /**
- * @brief Test util for log and param. The value is set through the system.testLogParam parameter
+ * @brief Test util for log and param. The value is set through the
+ * system.testLogParam parameter
  */
-LOG_ADD(LOG_INT8, testLogParam, &testLogParam)
+LOG_ADD_CPP(LOG_INT8, testLogParam, &testLogParam)
 
-LOG_GROUP_STOP(sys)
+LOG_GROUP_STOP_CPP(sys)

@@ -29,6 +29,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include "uart_syslink.h"
 
 void systemInit(void);
 bool systemTest(void);
@@ -43,6 +44,6 @@ bool systemIsArmed();
 
 void systemRequestShutdown();
 void systemRequestNRFVersion();
-void systemSyslinkReceive();
+void systemSyslinkReceive(SyslinkPacket *slp);
 
 #endif //__SYSTEM_H__
