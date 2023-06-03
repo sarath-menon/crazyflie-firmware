@@ -24,7 +24,7 @@
  * log.h - Dynamic log system
  */
 
-#ifndef SITL_CF2
+
 
 #ifndef __LOG_H__
 #define __LOG_H__
@@ -168,7 +168,7 @@ typedef struct {
 
 /* Macros */
 
-#ifndef UNIT_TEST_MODE
+#ifndef SITL_CF2
 
 #define LOG_ADD(TYPE, NAME, ADDRESS)                                           \
   {                                                                            \
@@ -241,7 +241,7 @@ typedef struct {
   }                                                                            \
   ;
 
-#ifdef CONFIG_DEBUG_LOG_ENABLE
+#ifdef CONFIG_DEBUG_LOG_ENABLE 
 #define LOG_ADD_DEBUG(TYPE, NAME, ADDRESS)
 #else
 #define LOG_ADD_DEBUG(TYPE, NAME, ADDRESS) LOG_ADD(TYPE, NAME, ADDRESS)
@@ -251,11 +251,17 @@ typedef struct {
 
 // Empty defines when running unit tests
 #define LOG_ADD(TYPE, NAME, ADDRESS)
+#define LOG_ADD_CPP(TYPE, NAME, ADDRESS)
 #define LOG_ADD_CORE(TYPE, NAME, ADDRESS)
+#define LOG_ADD_CORE_CPP(TYPE, NAME, ADDRESS)
 #define LOG_ADD_BY_FUNCTION(TYPE, NAME, ADDRESS)
+#define LOG_ADD_BY_FUNCTION_CPP(TYPE, NAME, ADDRESS)
 #define LOG_ADD_GROUP(TYPE, NAME, ADDRESS)
+#define LOG_ADD_GROUP_CPP(TYPE, NAME, ADDRESS)
 #define LOG_GROUP_START(NAME)
+#define LOG_GROUP_START_CPP(NAME)
 #define LOG_GROUP_STOP(NAME)
+#define LOG_GROUP_STOP_CPP(NAME)
 #define LOG_ADD_DEBUG(TYPE, NAME, ADDRESS)
 
 #endif // UNIT_TEST_MODE
@@ -271,4 +277,3 @@ typedef struct {
 
 #endif /* __LOG_H__ */
 
-#endif

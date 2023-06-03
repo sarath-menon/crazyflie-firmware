@@ -23,7 +23,7 @@
  *
  * param.h - Crazy parameter system header file.
  */
-#ifndef SITL_CF2
+
 
 #pragma once
 
@@ -108,6 +108,7 @@ typedef float *(*paramGetterFloat)(void);
 #define STRINGIFY(TYPE) #TYPE
 
 /* Macros */
+#ifndef SITL_CF2
 
 #define PARAM_ADD_FULL(TYPE, NAME, ADDRESS, CALLBACK, DEFAULT_GETTER)          \
   {                                                                            \
@@ -196,6 +197,25 @@ typedef float *(*paramGetterFloat)(void);
       PARAM_ADD_GROUP(PARAM_GROUP | PARAM_START, NAME, 0x0)
 
 #endif // UNIT_TEST_MODE
+
+#else
+#define PARAM_ADD_FULL(TYPE, NAME, ADDRESS, CALLBACK, DEFAULT_GETTER)
+#define PARAM_ADD_FULL_CPP(TYPE, NAME, ADDRESS, CALLBACK, DEFAULT_GETTER)
+#define PARAM_ADD(TYPE, NAME, ADDRESS) PARAM_ADD_FULL(TYPE, NAME, ADDRESS, 0, 0)
+#define PARAM_ADD_CPP(TYPE, NAME, ADDRESS)
+#define PARAM_ADD_WITH_CALLBACK(TYPE, NAME, ADDRESS, CALLBACK)
+#define PARAM_ADD_CORE(TYPE, NAME, ADDRESS)
+#define PARAM_ADD_CORE_CPP(TYPE, NAME, ADDRESS)
+#define PARAM_ADD_CORE_WITH_CALLBACK(TYPE, NAME, ADDRESS, CALLBACK)
+#define PARAM_ADD_GROUP(TYPE, NAME, ADDRESS)
+#define PARAM_ADD_GROUP_CPP(TYPE, NAME, ADDRESS)
+#define PARAM_GROUP_STOP(NAME)
+#define PARAM_GROUP_STOP_CPP(NAME)
+#ifndef UNIT_TEST_MODE
+#define PARAM_GROUP_START(NAME)
+#define PARAM_GROUP_START_CPP(NAME)
+
+#endif
 
 // Do not remove! This definition is used by doxygen to generate parameter
 // documentation.
