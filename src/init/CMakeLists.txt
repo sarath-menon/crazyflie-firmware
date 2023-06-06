@@ -5,27 +5,26 @@ set(EXECUTABLE ${EXEC_NAME}.elf)
 set(APP_SRC_FILES main.c)
 # set(APP_INCLUDE_FOLDERS include)
 
-set(MCU_LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/tools/make/F405/linker/FLASH_CLOAD.ld)
-
 # Executable files
-add_executable(${EXECUTABLE} ${NRF_SDK_SRC_FILES} ${APP_SRC_FILES}
+add_executable(${EXECUTABLE} ${APP_SRC_FILES} ${CF2_SRCS} ${CMSIS_DSP_SRCS}
                              ${STARTUP_SCRIPT})
 
-# MCU parameters
 target_compile_definitions(${EXECUTABLE} PRIVATE ${MCU_DEFINITONS})
 
-target_include_directories(${EXECUTABLE} PUBLIC ${INCLUDE_DIRS})
+target_include_directories(${EXECUTABLE} PUBLIC ${INCLUDE_DIRS}
+                                                ${CMSIS_DSP_INCLUDE_DIRS})
 
 target_compile_options(
   ${EXECUTABLE}
-  PRIVATE ${CPU_PARAMETERS}
-          # $<$<CONFIG:Debug>:-Og -g3 -ggdb> $<$<CONFIG:Release>:-Og -g0>
+  PUBLIC ${CPU_PARAMETERS} ${LINKER_FLAGS} # $<$<CONFIG:Debug>:-Og -g3 -ggdb>
+         # $<$<CONFIG:Release>:-Og -g0>
 )
 
-target_link_options(${EXECUTABLE} PRIVATE -T${MCU_LINKER_SCRIPT}
-                    ${CPU_PARAMETERS} ${LINKER_FLAGS})
+target_link_options(${EXECUTABLE} PRIVATE ${CPU_PARAMETERS} ${LINKER_FLAGS})
+set(CMAKE_EXE_LINKER_FLAGS
+    "${CMAKE_EXE_LINKER_FLAGS}  -T ${MCU_LINKER_SCRIPT} ")
 
-# target_link_libraries(${EXECUTABLE} PRIVATE st_lib custom_drivers )
+# target_link_libraries(${EXECUTABLE} PRIVATE arm_math)
 
 # Print executable areas
 add_custom_command(

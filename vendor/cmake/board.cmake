@@ -1,7 +1,7 @@
 # Board  Defs --------------------------------------------------------
 
 set(MCU_DEFINITONS -DSTM32F4XX -DSTM32F40_41xxx -DHSE_VALUE=8000000
-                   -DUSE_STDPERIPH_DRIVER -DCRAZYFLIE_FW)
+                   -DUSE_STDPERIPH_DRIVER -DCRAZYFLIE_FW -D__NO_SYSTEM_INIT)
 
 # CPU Parameters --------------------------------------------------------
 

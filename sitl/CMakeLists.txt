@@ -31,19 +31,15 @@ set(CF2_INCLUDE_DIRS
     ${CF2_SRCS_DIR}/platform
     ${CF2_SRCS_DIR}/src/utils/interface
     ${CF2_SRCS_DIR}/src/utils/interface
-    ${CF2_SRCS_DIR}/src/deck/interface #
+    ${CF2_SRCS_DIR}/src/deck/interface
     ${CF2_SRCS_DIR}/src/deck/drivers/interface
     ${CF2_SRCS_DIR}/src/config
     ${CF2_SRCS_DIR}/src/modules/interface
     ${CF2_SRCS_DIR}/src/modules/interface/controller
     ${CF2_SRCS_DIR}/src/modules/interface/estimator
-    ${CF2_SRCS_DIR}/src/hal/interface
-    ${CF2_SRCS_DIR}/src/modules/interface/estimator
     ${CF2_SRCS_DIR}/src/utils/interface/lighthouse
     ${CF2_SRCS_DIR}/src/utils/interface
-    ${CF2_SRCS_DIR}/src/config
     ${CF2_SRCS_DIR}/src/drivers/interface
-    ${CF2_SRCS_DIR}/src/platform/interface
     ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/DSP/Include
     ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/Core/Include
     ${CF2_SRCS_DIR}/build/include/generated)

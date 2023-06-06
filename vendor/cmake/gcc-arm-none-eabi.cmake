@@ -35,23 +35,13 @@ set(CMAKE_SIZE ${COMPILER_PREFIX}size)
 
 # Compiler flags --------------------------------------------------------
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2  -std=c11")
 set(CMAKE_C_FLAGS
-    "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=alignmen -fdata-sections -ffunction-sections"
+    "${CMAKE_C_FLAGS} -mthumb -mcpu=cortex-m4 -mfloat-abi=hard -mfpu=fpv4-sp-d16"
 )
 set(CMAKE_C_FLAGS
-    "${CMAKE_C_FLAGS} -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g3"
+    "${CMAKE_C_FLAGS} -DARM_MATH_CM4 -D__FPU_PRESENT=1 -ffunction-sections -fdata-sections"
 )
-set(CMAKE_C_FLAGS
-    "-fno-math-errno -DARM_MATH_CM4 -D__FPU_PRESENT=1 -mfp16-format=ieee")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-array-bounds -Wno-stringop-overread")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stringop-overflow")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -fno-exceptions -fcheck-new -fno-rtti -pedantic ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -g3")
-set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti -Wsuggest-override")
 
 # set(CPU_PARAMETERS -mcpu=cortex-m4 -mthumb -mfloat-abi=soft -mfpu=fpv4-sp-d16)
 
@@ -62,10 +52,7 @@ set(LINKER_FLAGS
     ${CPU_PARAMETERS}
     -nostdlib
     -Wl,-Map=${PROJECT_NAME}.map,--cref,--gc-sections,--undefined=uxTopUsedPriority
-    -lc
-    -lm
-    -lnosys
-    -lstdc++
+    # -T${CMAKE_SOURCE_DIR}/tools/make/F405/linker -lc -lm -lnosys -lstdc++
     # -Wl,--end-group -Wl,--print-memory-usage
     # -Wl,-Map=${PROJECT_NAME}.map,--cref -Wl,--gc-sections
 )
