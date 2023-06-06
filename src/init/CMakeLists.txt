@@ -21,10 +21,10 @@ target_compile_options(
 )
 
 target_link_options(${EXECUTABLE} PRIVATE ${CPU_PARAMETERS} ${LINKER_FLAGS})
-set(CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS}  -T ${MCU_LINKER_SCRIPT} ")
+set(CMAKE_EXE_LINKER_FLAGS "-T ${MCU_LINKER_SCRIPT}")
 
-# target_link_libraries(${EXECUTABLE} PRIVATE arm_math)
+# target_link_options( ${EXECUTABLE} PRIVATE "SHELL:-T
+# ${CMAKE_SOURCE_DIR}/tools/make/F405/linker/FLASH.ld")
 
 # Print executable areas
 add_custom_command(
@@ -32,9 +32,14 @@ add_custom_command(
   POST_BUILD
   COMMAND arm-none-eabi-size ${EXECUTABLE})
 
+add_custom_command(
+  TARGET ${EXECUTABLE}
+  POST_BUILD
+  COMMAND arm-none-eabi-strip --strip-debug ${EXECUTABLE})
+
 # Create hex file
 add_custom_command(
   TARGET ${EXECUTABLE}
   POST_BUILD
-  COMMAND arm-none-eabi-objcopy -O ihex ${EXECUTABLE} ${EXEC_NAME}.hex
-  COMMAND arm-none-eabi-objcopy -O binary ${EXECUTABLE} ${EXEC_NAME}.bin)
+  COMMAND ${CMAKE_OBJCOPY} -O ihex ${EXECUTABLE} ${EXEC_NAME}.hex
+  COMMAND ${CMAKE_OBJCOPY} -O binary ${EXECUTABLE} ${EXEC_NAME}.bin)
