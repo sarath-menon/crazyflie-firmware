@@ -109,7 +109,7 @@ endif
 
 
 PLATFORM  ?= cf2
-PROG ?= /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmware/examples/app_hello_world-cpp/build/$(PLATFORM)
+PROG ?= $(PLATFORM)
 PROG_CMAKE ?= /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmware/build_new/src/init/cf2
 
 ifeq ($(CONFIG_DEBUG),y)
