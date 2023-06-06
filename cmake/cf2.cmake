@@ -288,7 +288,7 @@ set(MODULES_SRCS
     ${CF2_SRCS_DIR}/src/utils/src/kve/kve.c
     ${CF2_SRCS_DIR}/src/utils/src/kve/kve_storage.c
     # utils -version
-    ${CF2_SRCS_DIR}/src/utils/src/version.c
+    ${CF2_SRCS_DIR}/src/utils/src/version_gen.c
     # lighthouse
     ${CF2_SRCS_DIR}/src/utils/src/lighthouse/lighthouse_calibration.c
     ${CF2_SRCS_DIR}/src/utils/src/lighthouse/lighthouse_geometry.c
