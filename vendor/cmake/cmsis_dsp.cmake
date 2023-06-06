@@ -272,18 +272,7 @@ set(CMSIS_DSP_SRCS
     ${VENDOR_DIR}/CMSIS/CMSIS/DSP/Source/TransformFunctions/arm_rfft_init_q15.c
     ${VENDOR_DIR}/CMSIS/CMSIS/DSP/Source/TransformFunctions/arm_rfft_init_q31.c
     ${VENDOR_DIR}/CMSIS/CMSIS/DSP/Source/TransformFunctions/arm_rfft_q15.c
-    ${VENDOR_DIR}/CMSIS/CMSIS/DSP/Source/TransformFunctions/arm_rfft_q31.c
-    ${VENDOR_DIR}/CMSIS/CMSIS/Core/Include
-    ${VENDOR_DIR}/CMSIS/CMSIS/DSP/Include)
-
-# set(FREERTOS_SRCS ${FREERTOS_SRC_DIR}/event_groups.c
-# ${FREERTOS_SRC_DIR}/list.c ${FREERTOS_SRC_DIR}/queue.c
-# ${FREERTOS_SRC_DIR}/tasks.c ${FREERTOS_SRC_DIR}/timers.c
-# ${FREERTOS_SRC_DIR}/stream_buffer.c
-# ${FREERTOS_SRC_DIR}/portable/MemMang/heap_4.c
-# ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM4F/port.c # libdw1000
-# ${CF2_SRCS_DIR}/vendor/libdw1000/src/libdw1000.c
-# ${CF2_SRCS_DIR}/vendor/libdw1000/src/libdw1000Spi.c)
+    ${VENDOR_DIR}/CMSIS/CMSIS/DSP/Source/TransformFunctions/arm_rfft_q31.c)
 
 set(SRCS ${CMSIS_DSP_SRCS})
 
