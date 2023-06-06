@@ -110,6 +110,7 @@ endif
 
 PLATFORM  ?= cf2
 PROG ?= /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmware/examples/app_hello_world-cpp/build/$(PLATFORM)
+PROG_CMAKE ?= /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmware/build_new/src/init/cf2
 
 ifeq ($(CONFIG_DEBUG),y)
 ARCH_CFLAGS	+= -O0 -Wconversion
@@ -161,6 +162,12 @@ flash:
 	$(OPENOCD) -d2 -f $(OPENOCD_INTERFACE) $(OPENOCD_CMDS) -f $(OPENOCD_TARGET) -c init -c targets -c "reset halt" \
                  -c "flash write_image erase $(PROG).bin $(LOAD_ADDRESS) bin" \
                  -c "verify_image $(PROG).bin $(LOAD_ADDRESS) bin" -c "reset run" -c shutdown
+
+#Flash the stm.
+flash_cmake:
+	$(OPENOCD) -d2 -f $(OPENOCD_INTERFACE) $(OPENOCD_CMDS) -f $(OPENOCD_TARGET) -c init -c targets -c "reset halt" \
+                 -c "flash write_image erase $(PROG_CMAKE).bin $(LOAD_ADDRESS) bin" \
+                 -c "verify_image $(PROG_CMAKE).bin $(LOAD_ADDRESS) bin" -c "reset run" -c shutdown
 
 #verify only
 flash_verify:
