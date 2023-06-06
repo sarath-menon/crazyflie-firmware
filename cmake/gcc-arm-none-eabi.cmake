@@ -32,26 +32,28 @@ set(CMAKE_ASM_COMPILER ${COMPILER_PREFIX}gcc)
 set(CMAKE_OBJCOPY ${COMPILER_PREFIX}objcopy)
 set(CMAKE_OBJDUMP ${COMPILER_PREFIX}objdump)
 set(CMAKE_SIZE ${COMPILER_PREFIX}size)
+set(CMAKE_SIZE ${COMPILER_PREFIX}strip)
 
 # Compiler flags --------------------------------------------------------
 
 set(CMAKE_C_FLAGS
-    "${CMAKE_C_FLAGS} -fsanitize=address -fsanitize=alignmen -fdata-sections -ffunction-sections"
-)
+    "${CMAKE_C_FLAGS} -Wno-psabi -fdata-sections -ffunction-sections")
 set(CMAKE_C_FLAGS
     "${CMAKE_C_FLAGS} -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g3"
 )
 set(CMAKE_C_FLAGS
-    "-fno-math-errno -DARM_MATH_CM4 -D__FPU_PRESENT=1 -mfp16-format=ieee")
+    "${CMAKE_C_FLAGS} -fno-math-errno -DARM_MATH_CM4 -D__FPU_PRESENT=1 -mfp16-format=ieee"
+)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-array-bounds -Wno-stringop-overread")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stringop-overflow")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stringop-overflow -MD -MP -MF")
+set(CMAKE_C_FLAGS
+    "${CMAKE_C_FLAGS} -Os -Wmissing-braces -fno-strict-aliasing ${C_PROFILE} -std=gnu11 -Wdouble-promotion "
+)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -fno-exceptions -fcheck-new -fno-rtti -pedantic ")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -g3")
-set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti -Wsuggest-override")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}") set(CMAKE_CXX_FLAGS
+# "${CMAKE_CXX_FLAGS} -fno-exceptions -fcheck-new -fno-rtti -pedantic ")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -g3") set(CMAKE_CXX_FLAGS
+# "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti -Wsuggest-override")
 
 # set(CPU_PARAMETERS -mcpu=cortex-m4 -mthumb -mfloat-abi=soft -mfpu=fpv4-sp-d16)
 
@@ -61,13 +63,13 @@ set(LINKER_FLAGS
     -specs=nosys.specs
     ${CPU_PARAMETERS}
     -nostdlib
-    -Wl,-Map=${PROJECT_NAME}.map,--cref,--gc-sections,--undefined=uxTopUsedPriority
+    -Wl,-Map=cf2_cmake.map,--cref,--gc-sections,--undefined=uxTopUsedPriority
     -lc
     -lm
     -lnosys
-    -lstdc++
+    # -lstdc++
+    $<$<COMPILE_LANGUAGE:CXX>:-nostdinc++
+    >
     # -Wl,--end-group -Wl,--print-memory-usage
     # -Wl,-Map=${PROJECT_NAME}.map,--cref -Wl,--gc-sections
 )
-
-set(AC_LINKER_FLAGS "--entry=__start -nostdlib -T${MCU_LINKER_SCRIPT}")
