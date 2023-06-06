@@ -27,12 +27,12 @@ set(DECK_SRCS
     # drivers
     ${CF2_SRCS_DIR}/src/deck/drivers/src/activeMarkerDeck.c
     ${CF2_SRCS_DIR}/src/deck/drivers/src/aideck.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/bigquad.c
+    # ${CF2_SRCS_DIR}/src/deck/drivers/src/bigquad.c
     ${CF2_SRCS_DIR}/src/deck/drivers/src/buzzdeck.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/cppmdeck.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/flapperdeck.c
+    # ${CF2_SRCS_DIR}/src/deck/drivers/src/cppmdeck.c
+    # ${CF2_SRCS_DIR}/src/deck/drivers/src/flapperdeck.c
     ${CF2_SRCS_DIR}/src/deck/drivers/src/flowdeck_v1v2.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/gtgps.c
+    # ${CF2_SRCS_DIR}/src/deck/drivers/src/gtgps.c
     ${CF2_SRCS_DIR}/src/deck/drivers/src/ledring12.c
     ${CF2_SRCS_DIR}/src/deck/drivers/src/lighthouse.c
     ${CF2_SRCS_DIR}/src/deck/drivers/src/locodeck.c
@@ -42,9 +42,10 @@ set(DECK_SRCS
     ${CF2_SRCS_DIR}/src/deck/drivers/src/multiranger.c
     ${CF2_SRCS_DIR}/src/deck/drivers/src/oa.c
     ${CF2_SRCS_DIR}/src/deck/drivers/src/usddeck.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/zranger.c
+    # ${CF2_SRCS_DIR}/src/deck/drivers/src/zranger.c
     ${CF2_SRCS_DIR}/src/deck/drivers/src/zranger2.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/cpx-host-on-uart2.c)
+    # ${CF2_SRCS_DIR}/src/deck/drivers/src/cpx-host-on-uart2.c
+)
 
 set(DRIVERS_SRCS
     # bosch
