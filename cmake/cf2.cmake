@@ -9,8 +9,6 @@ set(KBUILD_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build_new)
 set(FREERTOS_INCLUDE_DIRS ${FREERTOS_SRC_DIR}/include
                           ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM4F)
 
-set(INIT_SRCS ${CF2_SRCS_DIR}/src/init/main.c)
-
 set(DECK_SRCS
     # api
     ${CF2_SRCS_DIR}/src/deck/api/deck_analog.c
@@ -201,7 +199,7 @@ set(MODULES_SRCS
     ${CF2_SRCS_DIR}/src/modules/src/serial_4way_avrootloader.c
     ${CF2_SRCS_DIR}/src/modules/src/serial_4way.c
     ${CF2_SRCS_DIR}/src/modules/src/sound_cf2.c
-    ${CF2_SRCS_DIR}/src/modules/src/stabilizer.c
+    ${CF2_SRCS_DIR}/src/modules/src/stabilizer.cpp
     ${CF2_SRCS_DIR}/src/modules/src/static_mem.c
     ${CF2_SRCS_DIR}/src/modules/src/supervisor.c
     ${CF2_SRCS_DIR}/src/modules/src/supervisor_state_machine.c
@@ -340,7 +338,6 @@ set(STM32_SRCS
 
 set(CF2_SRCS
     ${DECK_SRCS}
-    ${INIT_SRCS}
     ${DRIVERS_SRCS}
     ${HAL_SRCS}
     ${LIB_SRCS}
