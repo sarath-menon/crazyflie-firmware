@@ -204,7 +204,7 @@ set(MODULES_SRCS
     ${CF2_SRCS_DIR}/src/modules/src/supervisor.c
     ${CF2_SRCS_DIR}/src/modules/src/supervisor_state_machine.c
     ${CF2_SRCS_DIR}/src/modules/src/sysload.c
-    ${CF2_SRCS_DIR}/src/modules/src/system.c
+    ${CF2_SRCS_DIR}/src/modules/src/system.cpp
     ${CF2_SRCS_DIR}/src/modules/src/tdoaEngineInstance.c
     ${CF2_SRCS_DIR}/src/modules/src/vcp_esc_passthrough.c
     ${CF2_SRCS_DIR}/src/modules/src/worker.c
