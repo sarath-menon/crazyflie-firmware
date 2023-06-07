@@ -1,4 +1,4 @@
-set(LIB_NAME modules_lib)
+set(LIB_NAME src_modules)
 
 list(
   APPEND
@@ -145,6 +145,5 @@ list(
 
 add_lib(${LIB_NAME} "${LIB_SRCS}")
 
-target_link_libraries(
-  ${LIB_NAME} PRIVATE src_hal # src_deck src_drivers  src_lib
-)
+# target_link_libraries( ${LIB_NAME} PRIVATE src_hal # src_deck src_drivers
+# src_lib )
