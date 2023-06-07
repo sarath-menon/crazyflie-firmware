@@ -3,7 +3,7 @@ set(CF2_SRCS_DIR ${CMAKE_SOURCE_DIR})
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 
 # KBUILD settings
-set(KBUILD_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build_new)
+set(KBUILD_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build)
 # set(KCONFIG_ALLCONFIG "configs/all.config")
 
 set(FREERTOS_INCLUDE_DIRS ${FREERTOS_SRC_DIR}/include
