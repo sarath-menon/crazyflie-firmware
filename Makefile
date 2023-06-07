@@ -1,6 +1,6 @@
 
 OPENOCD           ?= openocd
-OPENOCD_INTERFACE ?= interface/stlink.cfg
+OPENOCD_INTERFACE ?= interface/stlink-v2.cfg
 OPENOCD_TARGET    ?= target/stm32f4x.cfg
 OPENOCD_CMDS      ?=
 
@@ -40,7 +40,8 @@ LINKER_DIR = $(srctree)/tools/make/F405/linker
 LDFLAGS += --specs=nosys.specs --specs=nano.specs $(PROCESSOR) -nostdlib
 image_LDFLAGS += -Wl,-Map=$(PROG).map,--cref,--gc-sections,--undefined=uxTopUsedPriority
 image_LDFLAGS += -L$(srctree)/tools/make/F405/linker
-image_LDFLAGS += -T $(LINKER_DIR)/FLASH_CLOAD.ld
+# image_LDFLAGS += -T $(LINKER_DIR)/FLASH_CLOAD.ld
+image_LDFLAGS += -T $(LINKER_DIR)/STM32F405RGTx_FLASH.ld
 
 INCLUDES += -I$(srctree)/vendor/CMSIS/CMSIS/Core/Include -I$(srctree)/vendor/CMSIS/CMSIS/DSP/Include
 INCLUDES += -I$(srctree)/vendor/libdw1000/inc
