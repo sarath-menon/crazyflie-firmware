@@ -32,11 +32,6 @@ add_custom_command(
   POST_BUILD
   COMMAND arm-none-eabi-size ${EXECUTABLE})
 
-add_custom_command(
-  TARGET ${EXECUTABLE}
-  POST_BUILD
-  COMMAND arm-none-eabi-strip --strip-debug ${EXECUTABLE})
-
 # Create hex file
 add_custom_command(
   TARGET ${EXECUTABLE}
