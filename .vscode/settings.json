@@ -6,6 +6,9 @@
     },
     "files.associations": {
         "bootloader.h": "c",
-        "static_mem.h": "c"
+        "static_mem.h": "c",
+        "deck.h": "c",
+        "deck_core.h": "c",
+        "stm32fxxx.h": "c"
     }
 }

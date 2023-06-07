@@ -45,16 +45,15 @@ set(CMAKE_C_FLAGS
 set(CMAKE_C_FLAGS
     "${CMAKE_C_FLAGS} -fno-math-errno -DARM_MATH_CM4 -D__FPU_PRESENT=1 -mfp16-format=ieee"
 )
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-array-bounds -Wno-stringop-overread")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-array-bounds")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-stringop-overflow ")
 set(CMAKE_C_FLAGS
-    "${CMAKE_C_FLAGS} -Wmissing-braces -fno-strict-aliasing ${C_PROFILE}  -Wdouble-promotion "
-)
+    "${CMAKE_C_FLAGS} -Wmissing-braces -fno-strict-aliasing ${C_PROFILE} ")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS
-    "${CMAKE_CXX_FLAGS} -fno-exceptions -fcheck-new -fno-rtti -pedantic -Wsuggest-override"
-)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -Wpadded -fcheck-new
+# -fno-rtti -Wpedantic -Wsuggest-override -Wdouble-promotion -Wshadow -Wformat=2
+# -Wformat-truncation -Wundef -fno-common -Wconversion" )
 
 # Linker flags
 set(LINKER_FLAGS

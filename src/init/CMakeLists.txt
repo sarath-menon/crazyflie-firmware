@@ -23,6 +23,8 @@ target_compile_options(
 target_link_options(${EXECUTABLE} PRIVATE ${CPU_PARAMETERS} ${LINKER_FLAGS})
 set(CMAKE_EXE_LINKER_FLAGS "-T ${MCU_LINKER_SCRIPT}")
 
+target_link_libraries(${EXECUTABLE} PRIVATE src_deck)
+
 # target_link_options( ${EXECUTABLE} PRIVATE "SHELL:-T
 # ${CMAKE_SOURCE_DIR}/tools/make/F405/linker/FLASH.ld")
 

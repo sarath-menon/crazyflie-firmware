@@ -2,48 +2,43 @@ set(FREERTOS_SRC_DIR ${CMAKE_SOURCE_DIR}/vendor/FreeRTOS)
 set(CF2_SRCS_DIR ${CMAKE_SOURCE_DIR})
 set(LIB_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 
-# KBUILD settings
-set(KBUILD_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build)
+# # KBUILD settings set(KBUILD_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/build) #
 # set(KCONFIG_ALLCONFIG "configs/all.config")
 
-set(FREERTOS_INCLUDE_DIRS ${FREERTOS_SRC_DIR}/include
-                          ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM4F)
+# set(FREERTOS_INCLUDE_DIRS ${FREERTOS_SRC_DIR}/include
+# ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM4F)
 
-set(DECK_SRCS
-    # api
-    ${CF2_SRCS_DIR}/src/deck/api/deck_analog.c
-    ${CF2_SRCS_DIR}/src/deck/api/deck_constants.c
-    ${CF2_SRCS_DIR}/src/deck/api/deck_digital.c
-    ${CF2_SRCS_DIR}/src/deck/api/deck_spi3.c
-    ${CF2_SRCS_DIR}/src/deck/api/deck_spi.c
-    # core
-    ${CF2_SRCS_DIR}/src/deck/core/deck_drivers.c
-    ${CF2_SRCS_DIR}/src/deck/core/deck_info.c
-    ${CF2_SRCS_DIR}/src/deck/core/deck_memory.c
-    ${CF2_SRCS_DIR}/src/deck/core/deck.c
-    ${CF2_SRCS_DIR}/src/deck/core/deck_test.c
-    # drivers
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/activeMarkerDeck.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/aideck.c
-    # ${CF2_SRCS_DIR}/src/deck/drivers/src/bigquad.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/buzzdeck.c
-    # ${CF2_SRCS_DIR}/src/deck/drivers/src/cppmdeck.c
-    # ${CF2_SRCS_DIR}/src/deck/drivers/src/flapperdeck.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/flowdeck_v1v2.c
-    # ${CF2_SRCS_DIR}/src/deck/drivers/src/gtgps.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/ledring12.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/lighthouse.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/locodeck.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/lpsTdoa2Tag.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/lpsTdoa3Tag.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/lpsTwrTag.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/multiranger.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/oa.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/usddeck.c
-    # ${CF2_SRCS_DIR}/src/deck/drivers/src/zranger.c
-    ${CF2_SRCS_DIR}/src/deck/drivers/src/zranger2.c
-    # ${CF2_SRCS_DIR}/src/deck/drivers/src/cpx-host-on-uart2.c
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/deck.cmake)
+
+# set(DECK_SRCS # api ${CF2_SRCS_DIR}/src/deck/api/deck_analog.c
+# ${CF2_SRCS_DIR}/src/deck/api/deck_constants.c
+# ${CF2_SRCS_DIR}/src/deck/api/deck_digital.c
+# ${CF2_SRCS_DIR}/src/deck/api/deck_spi3.c
+# ${CF2_SRCS_DIR}/src/deck/api/deck_spi.c # core
+# ${CF2_SRCS_DIR}/src/deck/core/deck_drivers.c
+# ${CF2_SRCS_DIR}/src/deck/core/deck_info.c
+# ${CF2_SRCS_DIR}/src/deck/core/deck_memory.c
+# ${CF2_SRCS_DIR}/src/deck/core/deck.c ${CF2_SRCS_DIR}/src/deck/core/deck_test.c
+# # drivers ${CF2_SRCS_DIR}/src/deck/drivers/src/activeMarkerDeck.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/aideck.c #
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/bigquad.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/buzzdeck.c #
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/cppmdeck.c #
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/flapperdeck.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/flowdeck_v1v2.c #
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/gtgps.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/ledring12.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/lighthouse.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/locodeck.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/lpsTdoa2Tag.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/lpsTdoa3Tag.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/lpsTwrTag.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/multiranger.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/oa.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/usddeck.c #
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/zranger.c
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/zranger2.c #
+# ${CF2_SRCS_DIR}/src/deck/drivers/src/cpx-host-on-uart2.c )
 
 set(DRIVERS_SRCS
     # bosch
@@ -336,59 +331,44 @@ set(STM32_SRCS
     ${CF2_SRCS_DIR}/src/lib/STM32_USB_OTG_Driver/src/usb_dcd_int.c
     ${CF2_SRCS_DIR}/src/lib/STM32_USB_OTG_Driver/src/usb_dcd.c)
 
-set(CF2_SRCS
-    ${DECK_SRCS}
-    ${DRIVERS_SRCS}
-    ${HAL_SRCS}
-    ${LIB_SRCS}
-    ${MODULES_SRCS}
-    ${STM32_SRCS}
+set(CF2_SRCS # ${DECK_SRCS}
+    ${DRIVERS_SRCS} ${HAL_SRCS} ${LIB_SRCS} ${MODULES_SRCS} ${STM32_SRCS}
     ${FREERTOS_SRCS})
 
 # ---------------------------------------------------
 
-set(CF2_INCLUDE_DIRS
-    ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/DSP/Include
-    ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/Core/Include
-    ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/DSP/Include
-    ${CF2_SRCS_DIR}/vendor/libdw1000/inc
-    ${CF2_SRCS_DIR}/src/config
-    ${CF2_SRCS_DIR}/src/platform/interface
-    ${CF2_SRCS_DIR}/src/deck/interface
-    ${CF2_SRCS_DIR}/src/deck/drivers/interface
-    ${CF2_SRCS_DIR}/src/drivers/interface
-    ${CF2_SRCS_DIR}/src/drivers/bosch/interface
-    ${CF2_SRCS_DIR}/src/drivers/esp32/interface
-    ${CF2_SRCS_DIR}/src/hal/interface
-    ${CF2_SRCS_DIR}/src/modules/interface
-    ${CF2_SRCS_DIR}/src/modules/interface/kalman_core
-    ${CF2_SRCS_DIR}/src/modules/interface/lighthouse
-    ${CF2_SRCS_DIR}/src/modules/interface/outlierfilter
-    ${CF2_SRCS_DIR}/src/modules/interface/cpx
-    ${CF2_SRCS_DIR}/src/modules/interface/p2pDTR
-    ${CF2_SRCS_DIR}/src/modules/interface/controller
-    ${CF2_SRCS_DIR}/src/modules/interface/estimator
-    ${CF2_SRCS_DIR}/src/utils/interface
-    ${CF2_SRCS_DIR}/src/utils/interface/kve
-    ${CF2_SRCS_DIR}/src/utils/interface/lighthouse
-    ${CF2_SRCS_DIR}/src/utils/interface/tdoa
-    # stm32 drivers
-    ${CF2_SRCS_DIR}/src/lib/STM32F4xx_StdPeriph_Driver/inc
-    ${CF2_SRCS_DIR}/src/lib/STM32_USB_OTG_Driver/inc)
+# set(CF2_INCLUDE_DIRS ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/DSP/Include
+# ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/Core/Include
+# ${CF2_SRCS_DIR}/vendor/CMSIS/CMSIS/DSP/Include
+# ${CF2_SRCS_DIR}/vendor/libdw1000/inc ${CF2_SRCS_DIR}/src/config
+# ${CF2_SRCS_DIR}/src/platform/interface ${CF2_SRCS_DIR}/src/deck/interface
+# ${CF2_SRCS_DIR}/src/deck/drivers/interface
+# ${CF2_SRCS_DIR}/src/drivers/interface
+# ${CF2_SRCS_DIR}/src/drivers/bosch/interface
+# ${CF2_SRCS_DIR}/src/drivers/esp32/interface ${CF2_SRCS_DIR}/src/hal/interface
+# ${CF2_SRCS_DIR}/src/modules/interface
+# ${CF2_SRCS_DIR}/src/modules/interface/kalman_core
+# ${CF2_SRCS_DIR}/src/modules/interface/lighthouse
+# ${CF2_SRCS_DIR}/src/modules/interface/outlierfilter
+# ${CF2_SRCS_DIR}/src/modules/interface/cpx
+# ${CF2_SRCS_DIR}/src/modules/interface/p2pDTR
+# ${CF2_SRCS_DIR}/src/modules/interface/controller
+# ${CF2_SRCS_DIR}/src/modules/interface/estimator
+# ${CF2_SRCS_DIR}/src/utils/interface ${CF2_SRCS_DIR}/src/utils/interface/kve
+# ${CF2_SRCS_DIR}/src/utils/interface/lighthouse
+# ${CF2_SRCS_DIR}/src/utils/interface/tdoa # stm32 drivers
+# ${CF2_SRCS_DIR}/src/lib/STM32F4xx_StdPeriph_Driver/inc
+# ${CF2_SRCS_DIR}/src/lib/STM32_USB_OTG_Driver/inc)
 
-set(LIB_INCLUDE_DIRS
-    ${LIB_DIR}/FatFS
-    ${LIB_DIR}/CMSIS/STM32F4xx/Include
-    ${LIB_DIR}/STM32_USB_Device_Library/Core/inc
-    ${LIB_DIR}/STM32_USB_OTG_Driver/inc
-    ${LIB_DIR}/STM32F4xx_StdPeriph_Driver/inc
-    ${LIB_DIR}/vl53l1
-    ${LIB_DIR}/vl53l1/core/inc)
+# set(LIB_INCLUDE_DIRS ${LIB_DIR}/FatFS ${LIB_DIR}/CMSIS/STM32F4xx/Include
+# ${LIB_DIR}/STM32_USB_Device_Library/Core/inc
+# ${LIB_DIR}/STM32_USB_OTG_Driver/inc ${LIB_DIR}/STM32F4xx_StdPeriph_Driver/inc
+# ${LIB_DIR}/vl53l1 ${LIB_DIR}/vl53l1/core/inc)
 
-set(KBUILD_INCLUDE_DIRS ${KBUILD_OUTPUT_DIR}/include/generated)
+# set(KBUILD_INCLUDE_DIRS ${KBUILD_OUTPUT_DIR}/include/generated)
 
-set(INCLUDE_DIRS ${CF2_INCLUDE_DIRS} ${FREERTOS_INCLUDE_DIRS}
-                 ${LIB_INCLUDE_DIRS} ${KBUILD_INCLUDE_DIRS})
+# set(INCLUDE_DIRS ${CF2_INCLUDE_DIRS} ${FREERTOS_INCLUDE_DIRS}
+# ${LIB_INCLUDE_DIRS} ${KBUILD_INCLUDE_DIRS})
 
 # # Generate version.c dependencies add_custom_command( OUTPUT
 # ${CMAKE_CURRENT_SOURCE_DIR}/../version.c WORKING_DIRECTORY

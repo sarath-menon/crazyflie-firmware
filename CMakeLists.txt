@@ -1,6 +1,6 @@
-include(cmake/gcc-arm-none-eabi.cmake)
-include(cmake/cf2.cmake)
-include(cmake/board.cmake)
+# include(cmake/gcc-arm-none-eabi.cmake) include(cmake/cf2.cmake)
+# include(cmake/board.cmake)
+include(cmake/top.cmake)
 include(vendor/cmake/cmsis_dsp.cmake)
 
 cmake_minimum_required(VERSION 3.15.3)
