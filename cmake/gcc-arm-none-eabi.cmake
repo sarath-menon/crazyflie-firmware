@@ -51,12 +51,10 @@ set(CMAKE_C_FLAGS
     "${CMAKE_C_FLAGS} -Wmissing-braces -fno-strict-aliasing ${C_PROFILE}  -Wdouble-promotion "
 )
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}") set(CMAKE_CXX_FLAGS
-# "${CMAKE_CXX_FLAGS} -fno-exceptions -fcheck-new -fno-rtti -pedantic ")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -g3") set(CMAKE_CXX_FLAGS
-# "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti -Wsuggest-override")
-
-# set(CPU_PARAMETERS -mcpu=cortex-m4 -mthumb -mfloat-abi=soft -mfpu=fpv4-sp-d16)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}")
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -fno-exceptions -fcheck-new -fno-rtti -pedantic -Wsuggest-override"
+)
 
 # Linker flags
 set(LINKER_FLAGS
