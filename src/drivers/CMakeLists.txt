@@ -48,4 +48,4 @@ list(
 
 add_lib(${LIB_NAME} "${LIB_SRCS}")
 
-# target_link_libraries(${LIB_NAME} PRIVATE cmsis_dsp src_utils)
+target_link_libraries(${LIB_NAME} PRIVATE src_freertos)

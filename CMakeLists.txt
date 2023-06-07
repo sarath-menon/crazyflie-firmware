@@ -21,5 +21,6 @@ add_subdirectory(src/drivers)
 add_subdirectory(src/hal)
 add_subdirectory(src/lib)
 add_subdirectory(src/platform)
-# add_subdirectory(src/utils)
 add_subdirectory(src/modules)
+
+add_subdirectory(vendor)
