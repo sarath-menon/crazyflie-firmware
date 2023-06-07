@@ -6,13 +6,11 @@ set(APP_SRC_FILES main.c)
 # set(APP_INCLUDE_FOLDERS include)
 
 # Executable files
-add_executable(${EXECUTABLE} ${APP_SRC_FILES} ${CF2_SRCS} ${CMSIS_DSP_SRCS}
-                             ${STARTUP_SCRIPT})
+add_executable(${EXECUTABLE} ${APP_SRC_FILES} ${LIB_SRCS} ${STARTUP_SCRIPT})
 
 target_compile_definitions(${EXECUTABLE} PRIVATE ${MCU_DEFINITONS})
 
-target_include_directories(${EXECUTABLE} PUBLIC ${INCLUDE_DIRS}
-                                                ${CMSIS_DSP_INCLUDE_DIRS})
+target_include_directories(${EXECUTABLE} PUBLIC ${INCLUDE_DIRS})
 
 target_compile_options(
   ${EXECUTABLE}
@@ -23,7 +21,16 @@ target_compile_options(
 target_link_options(${EXECUTABLE} PRIVATE ${CPU_PARAMETERS} ${LINKER_FLAGS} -T
                     ${MCU_LINKER_SCRIPT})
 
-target_link_libraries(${EXECUTABLE} PRIVATE src_deck)
+target_link_libraries(
+  ${EXECUTABLE}
+  PRIVATE src_deck
+          src_drivers
+          src_hal
+          src_lib
+          modules_lib
+          src_freertos
+          src_stm32
+          cmsis_dsp)
 
 # Print executable areas
 add_custom_command(
