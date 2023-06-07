@@ -54,4 +54,4 @@ list(
 
 add_lib(${LIB_NAME} "${LIB_SRCS}")
 
-target_link_libraries(${LIB_NAME} PRIVATE src_deck src_drivers)
+target_link_libraries(${LIB_NAME} PRIVATE src_deck)

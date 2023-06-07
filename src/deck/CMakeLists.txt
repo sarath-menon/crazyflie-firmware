@@ -35,3 +35,5 @@ list(
   ${CF2_SRCS_DIR}/src/deck/drivers/src/cpx-host-on-uart2.c)
 
 add_lib(${LIB_NAME} "${LIB_SRCS}")
+
+target_link_libraries(${LIB_NAME} PRIVATE src_modules)

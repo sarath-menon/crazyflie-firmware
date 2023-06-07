@@ -145,5 +145,4 @@ list(
 
 add_lib(${LIB_NAME} "${LIB_SRCS}")
 
-# target_link_libraries( ${LIB_NAME} PRIVATE src_hal # src_deck src_drivers
-# src_lib )
+target_link_libraries(${LIB_NAME} PRIVATE src_hal src_drivers src_lib cmsis_dsp)

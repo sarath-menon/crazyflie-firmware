@@ -27,7 +27,7 @@ target_link_libraries(
           src_drivers
           src_hal
           src_lib
-          # src_modules
+          src_modules
           src_platform
           # src_utils
           src_freertos

@@ -47,3 +47,5 @@ list(
   ${CF2_SRCS_DIR}/src/drivers/src/ws2812_cf2.c)
 
 add_lib(${LIB_NAME} "${LIB_SRCS}")
+
+# target_link_libraries(${LIB_NAME} PRIVATE cmsis_dsp src_utils)
