@@ -1,4 +1,4 @@
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/helper.cmake)
+set(LIB_NAME src_deck)
 
 list(
   APPEND
@@ -34,4 +34,4 @@ list(
   ${CF2_SRCS_DIR}/src/deck/drivers/src/zranger2.c #
   ${CF2_SRCS_DIR}/src/deck/drivers/src/cpx-host-on-uart2.c)
 
-add_module(src_deck "${LIB_SRCS}")
+add_lib(${LIB_NAME} "${LIB_SRCS}")

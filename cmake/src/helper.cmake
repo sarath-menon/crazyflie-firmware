@@ -1,6 +1,6 @@
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/include_dirs.cmake)
 
-function(add_module LIB_NAME LIB_SRCS)
+function(add_lib LIB_NAME LIB_SRCS)
 
   add_library(${LIB_NAME} STATIC ${LIB_SRCS})
 

@@ -8,7 +8,7 @@ set(LIB_DIR ${CMAKE_SOURCE_DIR}/src/lib)
 # set(FREERTOS_INCLUDE_DIRS ${FREERTOS_SRC_DIR}/include
 # ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM4F)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/deck.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/libs.cmake)
 
 # set(DECK_SRCS # api ${CF2_SRCS_DIR}/src/deck/api/deck_analog.c
 # ${CF2_SRCS_DIR}/src/deck/api/deck_constants.c

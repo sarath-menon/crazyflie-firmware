@@ -1,9 +1,3 @@
-include(
-  /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmware/cmake/gcc-arm-none-eabi.cmake
-)
-include(
-  /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmware/cmake/board.cmake
-)
-include(
-  /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmware/cmake/cf2.cmake
-)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/gcc-arm-none-eabi.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/board.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/cf2.cmake)
