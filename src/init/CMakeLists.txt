@@ -31,7 +31,7 @@ target_link_libraries(
           src_platform
           src_utils
           src_freertos
-          src_stm32
+          # src_stm32
           src_freertos
           cmsis_dsp)
 

@@ -13,4 +13,5 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/utils.cmake)
 # include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/platform.cmake)
 # include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/freertos.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/stm32.cmake)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/src/cmsis_dsp.cmake)

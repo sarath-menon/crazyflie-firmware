@@ -6,8 +6,6 @@ include(
 
 add_library(${LIB_NAME} STATIC ${CMSIS_DSP_SRCS})
 
-message(${LIB_SRCS})
-
 target_include_directories(${LIB_NAME} PUBLIC ${CMSIS_DSP_INCLUDE_DIRS})
 
 target_compile_definitions(${LIB_NAME} PRIVATE ${MCU_DEFINITONS})
