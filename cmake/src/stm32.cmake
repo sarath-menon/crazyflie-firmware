@@ -1,5 +1,3 @@
-set(LIB_NAME srcc_stm32)
-
 list(
   APPEND
   LIB_SRCS
@@ -22,5 +20,3 @@ list(
   ${CF2_SRCS_DIR}/src/lib/STM32_USB_OTG_Driver/src/usb_core.c
   ${CF2_SRCS_DIR}/src/lib/STM32_USB_OTG_Driver/src/usb_dcd_int.c
   ${CF2_SRCS_DIR}/src/lib/STM32_USB_OTG_Driver/src/usb_dcd.c)
-
-# add_lib(${LIB_NAME} "${LIB_SRCS}")
