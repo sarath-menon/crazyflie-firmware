@@ -87,7 +87,7 @@ void crtpInit(void)
 {
   if(isInit)
     return;
-
+  // queue for data to be transmitted
   txQueue = xQueueCreate(CRTP_TX_QUEUE_SIZE, sizeof(CRTPPacket));
   DEBUG_QUEUE_MONITOR_REGISTER(txQueue);
 
