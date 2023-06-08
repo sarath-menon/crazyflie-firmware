@@ -2,7 +2,7 @@ set(LIB_NAME src_deck)
 
 list(
   APPEND
-  LIB_SRCS
+  LIB_DECK_SRCS
   ${CF2_SRCS_DIR}/src/deck/api/deck_analog.c
   ${CF2_SRCS_DIR}/src/deck/api/deck_constants.c
   ${CF2_SRCS_DIR}/src/deck/api/deck_digital.c
@@ -34,6 +34,6 @@ list(
   ${CF2_SRCS_DIR}/src/deck/drivers/src/zranger2.c #
   ${CF2_SRCS_DIR}/src/deck/drivers/src/cpx-host-on-uart2.c)
 
-add_lib(${LIB_NAME} "${LIB_SRCS}")
+add_lib(${LIB_NAME} "${LIB_DECK_SRCS}")
 
 target_link_libraries(${LIB_NAME} PRIVATE src_modules src_utils)

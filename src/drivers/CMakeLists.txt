@@ -2,7 +2,7 @@ set(LIB_NAME src_drivers)
 
 list(
   APPEND
-  LIB_SRCS
+  LIB_DRIVERS_SRCS
   # bosch
   ${CF2_SRCS_DIR}/src/drivers/bosch/src/bmi055_accel.c
   ${CF2_SRCS_DIR}/src/drivers/bosch/src/bmi055_gyro.c
@@ -46,6 +46,6 @@ list(
   ${CF2_SRCS_DIR}/src/drivers/src/watchdog.c
   ${CF2_SRCS_DIR}/src/drivers/src/ws2812_cf2.c)
 
-add_lib(${LIB_NAME} "${LIB_SRCS}")
+add_lib(${LIB_NAME} "${LIB_DRIVERS_SRCS}")
 
 target_link_libraries(${LIB_NAME} PRIVATE src_freertos src_utils)
