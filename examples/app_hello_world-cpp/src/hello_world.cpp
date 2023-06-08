@@ -6,6 +6,7 @@ extern "C" {
 #include <string.h>
 
 #include "app.h"
+#include "crtp.h"
 #include "debug.h"
 
 #include "FreeRTOS.h"
@@ -13,10 +14,19 @@ extern "C" {
 }
 
 void appMain() {
-  DEBUG_PRINT("Waiting for activation ...\n");
+
+  static CRTPPacket msg;
 
   while (1) {
-    vTaskDelay(M2T(2000));
+    vTaskDelay(M2T(1000));
     DEBUG_PRINT("Hello World!\n");
+
+    uint8_t size = 1;
+    msg.size = size;
+
+    uint8_t data = 'a';
+
+    msg.data[0] = data;
+    crtpSendPacket(&msg);
   }
 }
