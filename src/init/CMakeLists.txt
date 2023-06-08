@@ -29,7 +29,7 @@ target_link_libraries(
           src_lib
           src_modules
           src_platform
-          src_utils
+          # src_utils
           src_freertos
           # src_stm32
           src_freertos

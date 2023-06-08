@@ -2,7 +2,7 @@ set(LIB_NAME src_utils)
 
 list(
   APPEND
-  LIB_SRCS
+  UTILS_SRCS
   # utils
   ${CF2_SRCS_DIR}/src/utils/src/cfassert.c
   ${CF2_SRCS_DIR}/src/utils/src/clockCorrectionEngine.c
@@ -38,6 +38,6 @@ list(
   ${CF2_SRCS_DIR}/src/utils/src/tdoa/tdoaStats.c
   ${CF2_SRCS_DIR}/src/utils/src/tdoa/tdoaStorage.c)
 
-add_lib(${LIB_NAME} "${LIB_SRCS}")
+add_lib(${LIB_NAME} "${UTILS_SRCS}")
 
 # target_link_libraries(${LIB_NAME} PRIVATE src_lib)
