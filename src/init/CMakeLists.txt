@@ -2,8 +2,14 @@ set(EXEC_NAME "cf2")
 
 set(EXECUTABLE ${EXEC_NAME}.elf)
 
+<<<<<<< HEAD
 set(APP_SRC_FILES main.c src/app.c)
 set(APP_INCLUDE_FOLDERS include)
+=======
+set(APP_SRC_FILES
+    main.c ${CMAKE_SOURCE_DIR}/examples/app_hello_world-cpp/src/hello_world.cpp)
+# set(APP_INCLUDE_FOLDERS include)
+>>>>>>> dev
 
 # Executable files
 add_executable(${EXECUTABLE} ${APP_SRC_FILES} ${UTILS_SRCS} ${STARTUP_SCRIPT})
