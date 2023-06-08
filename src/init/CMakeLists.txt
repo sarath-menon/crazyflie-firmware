@@ -6,7 +6,7 @@ set(APP_SRC_FILES main.c)
 # set(APP_INCLUDE_FOLDERS include)
 
 # Executable files
-add_executable(${EXECUTABLE} ${APP_SRC_FILES} ${LIB_SRCS} ${STARTUP_SCRIPT})
+add_executable(${EXECUTABLE} ${APP_SRC_FILES} ${UTILS_SRCS} ${STARTUP_SCRIPT})
 
 target_compile_definitions(${EXECUTABLE} PRIVATE ${MCU_DEFINITONS})
 
@@ -29,7 +29,7 @@ target_link_libraries(
           src_lib
           src_modules
           src_platform
-          # src_utils
+          src_utils
           src_freertos
           src_stm32
           src_freertos

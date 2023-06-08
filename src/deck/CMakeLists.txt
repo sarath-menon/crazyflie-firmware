@@ -36,4 +36,4 @@ list(
 
 add_lib(${LIB_NAME} "${LIB_SRCS}")
 
-target_link_libraries(${LIB_NAME} PRIVATE src_modules)
+target_link_libraries(${LIB_NAME} PRIVATE src_modules src_utils)
