@@ -2,15 +2,16 @@ set(EXEC_NAME "cf2")
 
 set(EXECUTABLE ${EXEC_NAME}.elf)
 
-set(APP_SRC_FILES main.c)
-# set(APP_INCLUDE_FOLDERS include)
+set(APP_SRC_FILES main.c src/app.c)
+set(APP_INCLUDE_FOLDERS include)
 
 # Executable files
 add_executable(${EXECUTABLE} ${APP_SRC_FILES} ${UTILS_SRCS} ${STARTUP_SCRIPT})
 
 target_compile_definitions(${EXECUTABLE} PRIVATE ${MCU_DEFINITONS})
 
-target_include_directories(${EXECUTABLE} PUBLIC ${INCLUDE_DIRS})
+target_include_directories(${EXECUTABLE}
+                           PUBLIC ${INCLUDE_DIRS}${APP_INCLUDE_FOLDERS})
 
 target_compile_options(
   ${EXECUTABLE}
@@ -33,7 +34,8 @@ target_link_libraries(
           src_freertos
           # src_stm32
           src_freertos
-          cmsis_dsp)
+          cmsis_dsp
+          microxrceddsclient)
 
 # Print executable areas
 add_custom_command(

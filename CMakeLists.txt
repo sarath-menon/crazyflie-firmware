@@ -25,3 +25,4 @@ add_subdirectory(src/platform)
 add_subdirectory(src/modules)
 
 add_subdirectory(vendor)
+add_subdirectory(vendor/libmicroxrcedds)
