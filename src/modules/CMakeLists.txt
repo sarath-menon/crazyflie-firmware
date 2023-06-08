@@ -2,7 +2,7 @@ set(LIB_NAME src_modules)
 
 list(
   APPEND
-  LIB_SRCS
+  LIB_MODULES_SRCS
   ${CF2_SRCS_DIR}/src/modules/src/app_channel.c
   # ${CF2_SRCS_DIR}/src/modules/src/app_handler.c
   ${CF2_SRCS_DIR}/src/modules/src/bootloader.c
@@ -143,7 +143,7 @@ list(
   ${CF2_SRCS_DIR}/src/utils/src/tdoa/tdoaStats.c
   ${CF2_SRCS_DIR}/src/utils/src/tdoa/tdoaStorage.c)
 
-add_lib(${LIB_NAME} "${LIB_SRCS}")
+add_lib(${LIB_NAME} "${LIB_MODULES_SRCS}")
 
 target_link_libraries(${LIB_NAME} PRIVATE src_hal src_drivers src_lib src_utils
                                           cmsis_dsp)

@@ -2,7 +2,7 @@ set(LIB_NAME src_lib)
 
 list(
   APPEND
-  LIB_SRCS
+  LIB_LIB_SRCS
   # ${CF2_SRCS_DIR}/src/lib/Segger_RTT/RTT
   ${CF2_SRCS_DIR}/src/lib/CMSIS/STM32F4xx/Source/system_stm32f4xx.c
   # FatFS
@@ -45,4 +45,4 @@ list(
   ${CF2_SRCS_DIR}/src/lib/vl53l1/core/src/vl53l1_silicon_core.c
   ${CF2_SRCS_DIR}/src/lib/vl53l1/core/src/vl53l1_wait.c)
 
-add_lib(${LIB_NAME} "${LIB_SRCS}")
+add_lib(${LIB_NAME} "${LIB_LIB_SRCS}")

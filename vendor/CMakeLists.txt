@@ -4,7 +4,7 @@ set(LIB_NAME src_freertos)
 
 list(
   APPEND
-  LIB_SRCS
+  LIB_FREERTOS_SRCS
   ${FREERTOS_SRC_DIR}/event_groups.c
   ${FREERTOS_SRC_DIR}/list.c
   ${FREERTOS_SRC_DIR}/queue.c
@@ -21,4 +21,4 @@ list(
   # ${FREERTOS_SRC_DIR}/portable/ThirdParty/GCC/Posix/utils/src/wait_for_event.c
 )
 
-add_lib(${LIB_NAME} "${LIB_SRCS}")
+add_lib(${LIB_NAME} "${LIB_FREERTOS_SRCS}")
