@@ -4,7 +4,7 @@ list(
   APPEND
   LIB_MODULES_SRCS
   ${CF2_SRCS_DIR}/src/modules/src/app_channel.c
-  # ${CF2_SRCS_DIR}/src/modules/src/app_handler.c
+  ${CF2_SRCS_DIR}/src/modules/src/app_handler.c
   ${CF2_SRCS_DIR}/src/modules/src/bootloader.c
   ${CF2_SRCS_DIR}/src/modules/src/collision_avoidance.c
   ${CF2_SRCS_DIR}/src/modules/src/collision_avoidance.c
