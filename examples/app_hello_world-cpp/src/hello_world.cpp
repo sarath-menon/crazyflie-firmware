@@ -5,11 +5,11 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 
+#include "FreeRTOS.h"
 #include "app.h"
 #include "crtp.h"
+#include "dds_app.h"
 #include "debug.h"
-
-#include "FreeRTOS.h"
 #include "task.h"
 }
 

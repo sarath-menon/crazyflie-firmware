@@ -1,6 +1,5 @@
 #pragma once
 
-#include <device.h>
 #include <unistd.h>
 #include <uxr/client/client.h>
 
