@@ -43,12 +43,12 @@ list(
   ${CF2_SRCS_DIR}/src/modules/src/serial_4way_avrootloader.c
   ${CF2_SRCS_DIR}/src/modules/src/serial_4way.c
   ${CF2_SRCS_DIR}/src/modules/src/sound_cf2.c
-  ${CF2_SRCS_DIR}/src/modules/src/stabilizer.cpp
+  ${CF2_SRCS_DIR}/src/modules/src/stabilizer.c
   ${CF2_SRCS_DIR}/src/modules/src/static_mem.c
   ${CF2_SRCS_DIR}/src/modules/src/supervisor.c
   ${CF2_SRCS_DIR}/src/modules/src/supervisor_state_machine.c
   ${CF2_SRCS_DIR}/src/modules/src/sysload.c
-  ${CF2_SRCS_DIR}/src/modules/src/system.cpp
+  ${CF2_SRCS_DIR}/src/modules/src/system.c
   ${CF2_SRCS_DIR}/src/modules/src/tdoaEngineInstance.c
   ${CF2_SRCS_DIR}/src/modules/src/vcp_esc_passthrough.c
   ${CF2_SRCS_DIR}/src/modules/src/worker.c
