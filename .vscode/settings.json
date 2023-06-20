@@ -9,6 +9,8 @@
         "static_mem.h": "c",
         "deck.h": "c",
         "deck_core.h": "c",
-        "stm32fxxx.h": "c"
+        "stm32fxxx.h": "c",
+        "atomic": "c",
+        "filter.h": "c"
     }
 }

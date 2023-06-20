@@ -3,7 +3,9 @@ set(EXEC_NAME "cf2")
 set(EXECUTABLE ${EXEC_NAME}.elf)
 
 set(APP_SRC_FILES
-    main.c ${CMAKE_SOURCE_DIR}/examples/app_hello_world-cpp/src/hello_world.cpp)
+    main.c
+    ${CMAKE_SOURCE_DIR}/examples/app_internal_param_log/src/internal_param_log.cpp
+)
 # set(APP_INCLUDE_FOLDERS include)
 
 # Executable files

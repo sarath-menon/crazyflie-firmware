@@ -23,13 +23,15 @@
  *
  *
  * internal_log_param_api.c - App layer application of the internal log
- *  and param api  
+ *  and param api
  */
 
+#define DEBUG_MODULE "INTERNLOGPARAM"
 
-#include <string.h>
-#include <stdint.h>
+extern "C" {
 #include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "app.h"
 
@@ -40,33 +42,48 @@
 
 #include "log.h"
 #include "param.h"
+}
 
-#define DEBUG_MODULE "INTERNLOGPARAM"
-
-void appMain()
-{
-  DEBUG_PRINT("This is the App layer example of the internal log param api...\n");
+void appMain() {
+  DEBUG_PRINT(
+      "This is the App layer example of the internal log param api...\n");
   logVarId_t idYaw = logGetVarId("stateEstimate", "yaw");
-  float yaw = 0.0f;
+
+  logVarId_t id_gyro_x = logGetVarId("gyro", "x");
+  logVarId_t id_gyro_y = logGetVarId("gyro", "x");
+  logVarId_t id_gyro_z = logGetVarId("gyro", "x");
+
+  float yaw{};
+
+  float gyro_x{};
+  float gyro_y{};
+  float gyro_z{};
 
   paramVarId_t idEstimator = paramGetVarId("stabilizer", "estimator");
   uint8_t estimator_type = 0;
 
-  while(1) {
-    vTaskDelay(M2T(2000));
+  while (1) {
+    vTaskDelay(M2T(100));
 
     // Get the logging data
     yaw = logGetFloat(idYaw);
-    DEBUG_PRINT("Yaw is now: %f deg\n", (double)yaw);
 
-    // Get parameter value
-    estimator_type = paramGetInt(idEstimator);
-    DEBUG_PRINT("Estimator type is now: %d deg\n", estimator_type);
+    gyro_x = logGetFloat(id_gyro_x);
+    gyro_y = logGetFloat(id_gyro_y);
+    gyro_z = logGetFloat(id_gyro_z);
 
-    // Set a parameter value 
-    //  Note, this will influence the flight quality if you change estimator
-    uint8_t new_value = 2;
-    paramSetInt(idEstimator, new_value);
-    
+    // DEBUG_PRINT("Yaw is now: %f deg\n", (double)yaw);
+
+    DEBUG_PRINT("gyro is now: %.3f  %.3f  %.3f \n", (double)gyro_x,
+                (double)gyro_y, (double)gyro_z);
+
+    // // Get parameter value
+    // estimator_type = paramGetInt(idEstimator);
+    // DEBUG_PRINT("Estimator type is now: %d deg\n", estimator_type);
+
+    // // Set a parameter value
+    // //  Note, this will influence the flight quality if you change estimator
+    // uint8_t new_value = 2;
+    // paramSetInt(idEstimator, new_value);
   }
 }
