@@ -27,7 +27,7 @@ void appMain() {
     uint8_t data = 'a';
     msg.data[0] = data;
 
-    // send msg
-    crtpSendPacket(&msg);
+    // // send msg
+    // crtpSendPacket(&msg);
   }
 }
