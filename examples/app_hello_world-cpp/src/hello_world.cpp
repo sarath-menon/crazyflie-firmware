@@ -19,14 +19,15 @@ void appMain() {
 
   while (1) {
     vTaskDelay(M2T(1000));
-    DEBUG_PRINT("Hello World!\n");
+    // DEBUG_PRINT("Hello World!\n");
 
+    // custom CRTP message
     uint8_t size = 1;
     msg.size = size;
-
     uint8_t data = 'a';
-
     msg.data[0] = data;
+
+    // send msg
     crtpSendPacket(&msg);
   }
 }
