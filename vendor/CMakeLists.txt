@@ -22,3 +22,8 @@ list(
 )
 
 add_lib(${LIB_NAME} "${LIB_FREERTOS_SRCS}")
+
+set(CMSISCORE
+    /Users/sarathmenon/Documents/eth_projects/freertos_sim/crazyflie-firmware/vendor/CMSIS_5/CMSIS/Core
+)
+add_subdirectory(CMSIS-DSP)
