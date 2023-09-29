@@ -36,7 +36,8 @@ target_link_libraries(
           src_freertos
           # src_stm32
           src_freertos
-          cmsis_dsp)
+          # cmsis_dsp
+          CMSISDSP)
 
 # Print executable areas
 add_custom_command(

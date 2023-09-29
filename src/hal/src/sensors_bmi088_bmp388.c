@@ -53,6 +53,9 @@
 #include "static_mem.h"
 #include "system.h"
 
+#include "log.h"
+#include <string.h>
+
 #include "platform_defaults.h"
 #include "sensors_bmi088_common.h"
 
@@ -122,6 +125,8 @@ static StaticSemaphore_t dataReadyBuffer;
 
 static bool isInit = false;
 static sensorData_t sensorData;
+static sensorData_t sensorData_unfiltered;
+
 static volatile uint64_t imuIntTimestamp;
 
 static Axis3i16 gyroRaw;
@@ -317,6 +322,9 @@ static void sensorsTask(void *param) {
       // apply transformation from sensor frame to body fixed frame
       sensorsAlignToAirframe(&gyroScaledIMU, &sensorData.gyro);
 
+      // save unfiltered gyro values
+      memcpy(&sensorData_unfiltered.gyro, &sensorData.gyro, sizeof(sensorData.gyro));
+
       // apply lowpass filter
       applyAxis3fLpf((lpf2pData *)(&gyroLpf), &sensorData.gyro);
 
@@ -332,6 +340,10 @@ static void sensorsTask(void *param) {
       accScaledIMU.z = accelRaw.z * SENSORS_BMI088_G_PER_LSB_CFG / accScale;
       sensorsAlignToAirframe(&accScaledIMU, &accScaled);
       sensorsAccAlignToGravity(&accScaled, &sensorData.acc);
+
+      // save unfiltered gyro values
+      memcpy(&sensorData_unfiltered.acc, &sensorData.acc, sizeof(sensorData.acc));
+
       applyAxis3fLpf((lpf2pData *)(&accLpf), &sensorData.acc);
 
       measurement.type = MeasurementTypeAcceleration;
@@ -948,6 +960,21 @@ LOG_ADD(LOG_FLOAT, yVariance, &gyroBiasRunning.variance.y)
 LOG_ADD(LOG_FLOAT, zVariance, &gyroBiasRunning.variance.z)
 LOG_GROUP_STOP(gyro)
 #endif
+
+// log gyro measurements just before applying low pass filter
+LOG_GROUP_START(gyro_unfiltered)
+LOG_ADD_CORE(LOG_FLOAT, x, &sensorData_unfiltered.gyro.x)
+LOG_ADD_CORE(LOG_FLOAT, y, &sensorData_unfiltered.gyro.y)
+LOG_ADD_CORE(LOG_FLOAT, z, &sensorData_unfiltered.gyro.z)
+LOG_GROUP_STOP(gyro_unfiltered)
+
+LOG_GROUP_START(acc_unfiltered)
+LOG_ADD_CORE(LOG_FLOAT, x, &sensorData_unfiltered.acc.x)
+LOG_ADD_CORE(LOG_FLOAT, y, &sensorData_unfiltered.acc.y)
+LOG_ADD_CORE(LOG_FLOAT, z, &sensorData_unfiltered.acc.z)
+LOG_GROUP_STOP(acc_unfiltered)
+
+// log parameters
 
 PARAM_GROUP_START(imu_sensors)
 
