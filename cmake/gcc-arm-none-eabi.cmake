@@ -9,7 +9,7 @@ elseif(UNIX OR APPLE)
   set(UTIL_SEARCH_CMD which)
 endif()
 
-set(COMPILER_PREFIX /usr/local/bin/arm-none-eabi-)
+set(COMPILER_PREFIX /opt/homebrew/bin/arm-none-eabi-)
 
 execute_process(
   COMMAND ${UTIL_SEARCH_CMD} ${TOOLCHAIN_PREFIX}gcc
