@@ -2,6 +2,12 @@
 
 Crazyflie firmware with CMake based build.
 
+The key advantages are:
+
+- An easier way to organize subfolders and add modules
+- An organized template for linker flags, compiler flags etc
+- Cleaner working directory after building
+
 The relevant files are:
 
 1. cmake/gcc-arm-none-eabi.cmake - compiler settings
