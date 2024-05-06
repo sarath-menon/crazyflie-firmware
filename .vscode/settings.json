@@ -1,10 +1,11 @@
 {
-    "search.exclude": {
-        "**/generated": true,
-        "**/node_modules": true,
-        "**/bower_components": true
-    },
-    "files.associations": {
-        "bootloader.h": "c"
-    }
+  "search.exclude": {
+    "**/generated": true,
+    "**/node_modules": true,
+    "**/bower_components": true
+  },
+  "files.associations": {
+    "bootloader.h": "c",
+    "controller.h": "c"
+  }
 }
