@@ -34,7 +34,7 @@ void appMain() {
 
 void controllerOutOfTreeInit() {
   // Initialize your controller data here...
-  controllerRlsInit();
+  controllerRlsFirmwareInit();
 }
 
 bool controllerOutOfTreeTest() {
@@ -48,5 +48,5 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
   // ddkdod
 
   // Call the PID controller instead in this example to make it possible to fly
-  controllerRls(control, setpoint, sensors, state, tick);
+  controllerRlsFirmware(control, setpoint, sensors, state, tick);
 }
