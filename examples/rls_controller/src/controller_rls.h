@@ -28,6 +28,9 @@ typedef struct
     float S_target_aug_all[W_RLS][W_RLS][N_OF_INTEREST][N_OF_INTEREST];
     float P[N_OF_INTEREST][N_OF_INTEREST];
 
+    float disturbances_predicted[W_RLS][N_OF_INTEREST];
+    float M_optimal_all[4][N];
+
     // XY Position PID
     float kp_xy; // P
     float kd_xy; // D

@@ -153,6 +153,26 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
   self->cmd_roll_rate = control_input[1];
   self->cmd_pitch_rate = control_input[2];
   self->cmd_yaw_rate = control_input[3];
+
+  predict_future_targets(self, setpoint);
+
+  float future_disturbance_feedback[4][1] = {0};
+  for (int i = 0; i < W_RLS; i++)
+  {
+    for (int j = 0; j < 4; j++)
+    {
+      for (int k = 0; k < N_OF_INTEREST; k++)
+      {
+        future_disturbance_feedback[j][0] -= self->M_optimal_all[j][k] * self->disturbances_predicted[i][k];
+      }
+    }
+  }
+
+  // add to LQR output
+  self->cmd_thrust += future_disturbance_feedback[0][0];
+  self->cmd_roll_rate += future_disturbance_feedback[1][0];
+  self->cmd_pitch_rate += future_disturbance_feedback[2][0];
+  self->cmd_yaw_rate += future_disturbance_feedback[3][0];
 }
 
 void controllerRlsFirmwareInit(void)
