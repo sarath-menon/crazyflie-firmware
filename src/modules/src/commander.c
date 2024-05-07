@@ -50,8 +50,11 @@ static bool enableHighLevel = false;
 
 static QueueHandle_t setpointQueue;
 STATIC_MEM_QUEUE_ALLOC(setpointQueue, 1, sizeof(setpoint_t));
+
 static QueueHandle_t priorityQueue;
 STATIC_MEM_QUEUE_ALLOC(priorityQueue, 1, sizeof(int));
+
+static uint32_t N_setpoints_recv = 0;
 
 /* Public functions */
 void commanderInit(void)
@@ -78,12 +81,17 @@ void commanderSetSetpoint(setpoint_t *setpoint, int priority)
   const BaseType_t peekResult = xQueuePeek(priorityQueue, &currentPriority, 0);
   ASSERT(peekResult == pdTRUE);
 
-  if (priority >= currentPriority) {
+  if (priority >= currentPriority)
+  {
     setpoint->timestamp = xTaskGetTickCount();
     // This is a potential race but without effect on functionality
     xQueueOverwrite(setpointQueue, setpoint);
     xQueueOverwrite(priorityQueue, &priority);
-    if (priority > COMMANDER_PRIORITY_HIGHLEVEL) {
+
+    N_setpoints_recv++;
+
+    if (priority > COMMANDER_PRIORITY_HIGHLEVEL)
+    {
       // Stop the high-level planner so it will forget its current state
       crtpCommanderHighLevelStop();
     }
@@ -100,7 +108,7 @@ void commanderRelaxPriority()
 void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state)
 {
   xQueuePeek(setpointQueue, setpoint, 0);
-  
+
   lastUpdate = setpoint->timestamp;
 
   // This copying is not strictly necessary because stabilizer.c already keeps
@@ -111,27 +119,32 @@ void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state)
 
 void commanderGetLastNSetpoints(setpoint_t setpoints[], int n, const state_t *state)
 {
-    setpoint_t tempSetpoint;
-    BaseType_t xStatus;
-    int count = 0;
+  setpoint_t tempSetpoint;
+  BaseType_t xStatus;
+  int count = 0;
 
-    // Temporarily dequeue items, inspect them, and then requeue them
-    for (int i = 0; i < n; i++) {
-        xStatus = xQueueReceive(setpointQueue, &tempSetpoint, 0);
-        if (xStatus == pdPASS) {
-            // Copy the dequeued setpoint into the provided array
-            setpoints[i] = tempSetpoint;
-            count++;
-        } else {
-            // Handle the case where the queue has less than n items
-            break;
-        }
+  // Temporarily dequeue items, inspect them, and then requeue them
+  for (int i = 0; i < n; i++)
+  {
+    xStatus = xQueueReceive(setpointQueue, &tempSetpoint, 0);
+    if (xStatus == pdPASS)
+    {
+      // Copy the dequeued setpoint into the provided array
+      setpoints[i] = tempSetpoint;
+      count++;
     }
+    else
+    {
+      // Handle the case where the queue has less than n items
+      break;
+    }
+  }
 
-    // Requeue all items at once
-    for (int i = 0; i < count; i++) {
-        xQueueSendToBack(setpointQueue, &setpoints[i], 0);
-    }
+  // Requeue all items at once
+  for (int i = 0; i < count; i++)
+  {
+    xQueueSendToBack(setpointQueue, &setpoints[i], 0);
+  }
 }
 
 bool commanderTest(void)
@@ -152,6 +165,11 @@ int commanderGetActivePriority(void)
   ASSERT(peekResult == pdTRUE);
 
   return priority;
+}
+
+uint32_t commanderGetNSetpointsReceived(void)
+{
+  return N_setpoints_recv;
 }
 
 /**

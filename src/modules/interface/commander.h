@@ -30,15 +30,15 @@
 #include "config.h"
 #include "stabilizer_types.h"
 
-#define DEFAULT_YAW_MODE  XMODE
+#define DEFAULT_YAW_MODE XMODE
 
-#define COMMANDER_PRIORITY_DISABLE   0
+#define COMMANDER_PRIORITY_DISABLE 0
 // Keep a macro for lowest non-disabled priority, regardless of source, in case
 // some day there is a priority lower than the high-level commander.
-#define COMMANDER_PRIORITY_LOWEST    1
+#define COMMANDER_PRIORITY_LOWEST 1
 #define COMMANDER_PRIORITY_HIGHLEVEL 1
-#define COMMANDER_PRIORITY_CRTP      2
-#define COMMANDER_PRIORITY_EXTRX     3
+#define COMMANDER_PRIORITY_CRTP 2
+#define COMMANDER_PRIORITY_EXTRX 3
 
 void commanderInit(void);
 bool commanderTest(void);
@@ -55,5 +55,7 @@ int commanderGetActivePriority(void);
 void commanderRelaxPriority(void);
 
 void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state);
+
+uint32_t commanderGetNSetpointsReceived(void);
 
 #endif /* COMMANDER_H_ */
