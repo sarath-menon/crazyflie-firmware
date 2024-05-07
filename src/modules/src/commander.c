@@ -100,12 +100,38 @@ void commanderRelaxPriority()
 void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state)
 {
   xQueuePeek(setpointQueue, setpoint, 0);
+  
   lastUpdate = setpoint->timestamp;
 
   // This copying is not strictly necessary because stabilizer.c already keeps
   // a static state_t containing the most recent state estimate. However, it is
   // not accessible by the public interface.
   lastState = *state;
+}
+
+void commanderGetLastNSetpoints(setpoint_t setpoints[], int n, const state_t *state)
+{
+    setpoint_t tempSetpoint;
+    BaseType_t xStatus;
+    int count = 0;
+
+    // Temporarily dequeue items, inspect them, and then requeue them
+    for (int i = 0; i < n; i++) {
+        xStatus = xQueueReceive(setpointQueue, &tempSetpoint, 0);
+        if (xStatus == pdPASS) {
+            // Copy the dequeued setpoint into the provided array
+            setpoints[i] = tempSetpoint;
+            count++;
+        } else {
+            // Handle the case where the queue has less than n items
+            break;
+        }
+    }
+
+    // Requeue all items at once
+    for (int i = 0; i < count; i++) {
+        xQueueSendToBack(setpointQueue, &setpoints[i], 0);
+    }
 }
 
 bool commanderTest(void)

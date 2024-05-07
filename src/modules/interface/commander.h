@@ -46,6 +46,8 @@ uint32_t commanderGetInactivityTime(void);
 
 // Arg `setpoint` cannot be const; the commander will mutate its timestamp.
 void commanderSetSetpoint(setpoint_t *setpoint, int priority);
+void commanderGetLastNSetpoints(setpoint_t setpoints[], int n, const state_t *state);
+
 int commanderGetActivePriority(void);
 
 // Sets the priority of the current setpoint to the lowest non-disabled value,
