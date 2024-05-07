@@ -9,4 +9,6 @@ void compute_setpoint_viaLQR(float K_star[M][N], float error_inertial[N], float 
 
 void predict_future_targets(controllerRls_t *self, const setpoint_t *setpoint);
 
+void RLS_update(controllerRls_t *self);
+
 #endif //__CONTROLLER_RLS_UTILS_H__

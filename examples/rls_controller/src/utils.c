@@ -174,3 +174,8 @@ void predict_future_targets(controllerRls_t *self, const setpoint_t *setpoint)
         }
     }
 }
+
+void RLS_update(controllerRls_t *self)
+{
+    uint32_t N_setpoints_recv = commanderGetNSetpointsReceived();
+}
