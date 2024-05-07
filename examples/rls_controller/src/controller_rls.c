@@ -2,7 +2,7 @@
 #include "stabilizer_types.h"
 
 #include "attitude_controller.h"
-#include "position_controller.h"
+#include "position_controller_rls.h"
 #include "controller_rls.h"
 
 #include "log.h"
@@ -27,7 +27,7 @@ static float accelz;
 void controllerRlsInit(void)
 {
   attitudeControllerInit(ATTITUDE_UPDATE_DT);
-  positionControllerInit();
+  positionControllerInitRLS();
 }
 
 bool controllerRlsTest(void)
@@ -91,7 +91,7 @@ void controllerRls(control_t *control, const setpoint_t *setpoint,
   }
 
   if (RATE_DO_EXECUTE(POSITION_RATE, stabilizerStep)) {
-    positionController(&actuatorThrust, &attitudeDesired, setpoint, state);
+    positionControllerRLS(&actuatorThrust, &attitudeDesired, setpoint, state);
   }
 
   if (RATE_DO_EXECUTE(ATTITUDE_RATE, stabilizerStep)) {
@@ -155,7 +155,7 @@ void controllerRls(control_t *control, const setpoint_t *setpoint,
     cmd_yaw = control->yaw;
 
     attitudeControllerResetAllPID();
-    positionControllerResetAllPID();
+    positionControllerResetAllfiltersRLS();
 
     // Reset the calculated YAW angle for rate control
     attitudeDesired.yaw = state->attitude.yaw;
