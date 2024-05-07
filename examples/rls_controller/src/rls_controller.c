@@ -47,6 +47,8 @@ bool controllerOutOfTreeTest() {
 void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const sensorData_t *sensors, const state_t *state, const uint32_t tick) {
   // Implement your controller here...
 
+  // ddkdod
+
   // Call the PID controller instead in this example to make it possible to fly
   controllerPid(control, setpoint, sensors, state, tick);
 }
