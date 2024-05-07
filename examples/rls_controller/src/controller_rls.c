@@ -8,55 +8,53 @@
 #include "physicalConstants.h"
 #include "platform_defaults.h"
 #include "utils.h"
-
+#include "math_lib.h"
 
 // Global state variable used in the
 // firmware as the only instance and in bindings
 // to hold the default values
 static controllerRls_t g_self = {
-  .mass = CF_MASS,
-  .massThrust = 132000,
+    .mass = CF_MASS,
+    .massThrust = 132000,
 
-  // XY Position PID
-  .kp_xy = 0.4,       // P
-  .kd_xy = 0.2,       // D
-  .ki_xy = 0.05,      // I
-  .i_range_xy = 2.0,
+    // XY Position PID
+    .kp_xy = 0.4,  // P
+    .kd_xy = 0.2,  // D
+    .ki_xy = 0.05, // I
+    .i_range_xy = 2.0,
 
-  // Z Position
-  .kp_z = 1.25,       // P
-  .kd_z = 0.4,        // D
-  .ki_z = 0.05,       // I
-  .i_range_z  = 0.4,
+    // Z Position
+    .kp_z = 1.25, // P
+    .kd_z = 0.4,  // D
+    .ki_z = 0.05, // I
+    .i_range_z = 0.4,
 
-  // Attitude
-  .kR_xy = 70000, // P
-  .kw_xy = 20000, // D
-  .ki_m_xy = 0.0, // I
-  .i_range_m_xy = 1.0,
+    // Attitude
+    .kR_xy = 70000, // P
+    .kw_xy = 20000, // D
+    .ki_m_xy = 0.0, // I
+    .i_range_m_xy = 1.0,
 
-  // Yaw
-  .kR_z = 60000, // P
-  .kw_z = 12000, // D
-  .ki_m_z = 500, // I
-  .i_range_m_z  = 1500,
+    // Yaw
+    .kR_z = 60000, // P
+    .kw_z = 12000, // D
+    .ki_m_z = 500, // I
+    .i_range_m_z = 1500,
 
-  // roll and pitch angular velocity
-  .kd_omega_rp = 200, // D
+    // roll and pitch angular velocity
+    .kd_omega_rp = 200, // D
 
+    // Helper variables
+    .i_error_x = 0,
+    .i_error_y = 0,
+    .i_error_z = 0,
 
-  // Helper variables
-  .i_error_x = 0,
-  .i_error_y = 0,
-  .i_error_z = 0,
-
-  .i_error_m_x = 0,
-  .i_error_m_y = 0,
-  .i_error_m_z = 0,
+    .i_error_m_x = 0,
+    .i_error_m_y = 0,
+    .i_error_m_z = 0,
 };
 
-
-void controllerRlsReset(controllerRls_t* self)
+void controllerRlsReset(controllerRls_t *self)
 {
   self->i_error_x = 0;
   self->i_error_y = 0;
@@ -66,7 +64,7 @@ void controllerRlsReset(controllerRls_t* self)
   self->i_error_m_z = 0;
 }
 
-void controllerRlsInit(controllerRls_t* self)
+void controllerRlsInit(controllerRls_t *self)
 {
   // copy default values (bindings), or does nothing (firmware)
   *self = g_self;
@@ -76,60 +74,69 @@ void controllerRlsInit(controllerRls_t* self)
 
   // Initialize K_star for LQR
   float K_star[M][N] = {
-    {0, 0, 0.98, 0, 0, 0.25, 0, 0, 0},
-    {0, -3.2, 0, 0, -2.0, 0, 4.0, 0, 0},
-    {3.2, 0, 0, 2.0, 0, 0, 0, 4.0, 0},
-    {0, 0, 0, 0, 0, 0, 0, 0, 2.3}
-  };
+      {0, 0, 0.98, 0, 0, 0.25, 0, 0, 0},
+      {0, -3.2, 0, 0, -2.0, 0, 4.0, 0, 0},
+      {3.2, 0, 0, 2.0, 0, 0, 0, 4.0, 0},
+      {0, 0, 0, 0, 0, 0, 0, 0, 2.3}};
 
-  for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 9; j++) {
-          self->K_star[i][j] = K_star[i][j];
-      }
+  for (int i = 0; i < 4; i++)
+  {
+    for (int j = 0; j < 9; j++)
+    {
+      self->K_star[i][j] = K_star[i][j];
+    }
+  }
+
+  // Initialize each matrix in S_target_aug_all to an identity matrix
+  for (int w = 0; w < W_RLS; w++)
+  {
+    for (int k = 0; k < W_RLS; k++)
+    {
+      create_identity_matrix((float *)self->S_target_aug_all[w][k], N_OF_INTEREST);
+    }
   }
 
   controllerRlsReset(self);
 }
 
-bool controllerRlsTest(controllerRls_t* self)
+bool controllerRlsTest(controllerRls_t *self)
 {
   return true;
 }
 
-void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *setpoint,
-                                         const sensorData_t *sensors,
-                                         const state_t *state,
-                                         const stabilizerStep_t stabilizerStep)
+void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *setpoint,
+                   const sensorData_t *sensors,
+                   const state_t *state,
+                   const stabilizerStep_t stabilizerStep)
 {
-   float errorArray[N];
-   float control_input[M];
+  float errorArray[N];
+  float control_input[M];
 
   control->controlMode = controlModeLegacy;
 
-  if (!RATE_DO_EXECUTE(ATTITUDE_RATE, stabilizerStep)) {
+  if (!RATE_DO_EXECUTE(ATTITUDE_RATE, stabilizerStep))
+  {
     return;
   }
 
   // dt = (float)(1.0f/ATTITUDE_RATE);
 
-  // positon and velocity setpoints
+  // position, velocity, attitude setpoints
   float setpointArray[9] = {
-    setpoint->position.x, setpoint->position.y, setpoint->position.z,
-    setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
-    setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw
-  };
-
+      setpoint->position.x, setpoint->position.y, setpoint->position.z,
+      setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
+      setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
 
   // positon, velocity, attitude, attitude rate states
   float stateArray[9] = {
-    state->position.x, state->position.y, state->position.z,
-    state->velocity.x, state->velocity.y, state->velocity.z,
-    state->attitude.roll, state->attitude.pitch, state->attitude.yaw
-  };
+      state->position.x, state->position.y, state->position.z,
+      state->velocity.x, state->velocity.y, state->velocity.z,
+      state->attitude.roll, state->attitude.pitch, state->attitude.yaw};
 
   // compute error
-  for (int i = 0; i < N; i++) {
-      errorArray[i] = setpointArray[i] - stateArray[i];
+  for (int i = 0; i < N; i++)
+  {
+    errorArray[i] = setpointArray[i] - stateArray[i];
   }
 
   compute_setpoint_viaLQR(self->K_star, errorArray, state->attitude.yaw, control_input);
@@ -140,7 +147,6 @@ void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *
   self->cmd_pitch_rate = control_input[2];
   self->cmd_yaw_rate = control_input[3];
 }
-
 
 void controllerRlsFirmwareInit(void)
 {
@@ -153,13 +159,12 @@ bool controllerRlsFirmwareTest(void)
 }
 
 void controllerRlsFirmware(control_t *control, const setpoint_t *setpoint,
-                                         const sensorData_t *sensors,
-                                         const state_t *state,
-                                         const stabilizerStep_t stabilizerStep)
+                           const sensorData_t *sensors,
+                           const state_t *state,
+                           const stabilizerStep_t stabilizerStep)
 {
   controllerRls(&g_self, control, setpoint, sensors, state, stabilizerStep);
 }
-
 
 /**
  * Tunning variables for the full state Rls Controller

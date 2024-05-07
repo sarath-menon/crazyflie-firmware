@@ -7,43 +7,48 @@
 #define N 9
 #define M 4
 #define DELTA_T 0.002f
+#define W_RLS 5 // prediction horizon
+#define IDX_OF_INTEREST [ 0, 1, 2, 3, 4, 5 ]
+#define N_OF_INTEREST 6
 
 #define MAX_ERROR_XY 0.3f
 #define MAX_ERROR_Z 0.4f
 #define MAX_ERROR_YAW 1.0472f // approximately 60 degrees in radians
 
-
-
-typedef struct {
+typedef struct
+{
     float mass;
     float massThrust;
 
     float A[N][N];
     float B[N][M];
+
     float K_star[M][N];
+    float S_target_aug_all[W_RLS][W_RLS][N_OF_INTEREST][N_OF_INTEREST];
+    float P[N_OF_INTEREST][N_OF_INTEREST];
 
     // XY Position PID
-    float kp_xy;      // P
-    float kd_xy;      // D
-    float ki_xy;      // I
+    float kp_xy; // P
+    float kd_xy; // D
+    float ki_xy; // I
     float i_range_xy;
 
     // Z Position
-    float kp_z;       // P
-    float kd_z;       // D
-    float ki_z;       // I
+    float kp_z; // P
+    float kd_z; // D
+    float ki_z; // I
     float i_range_z;
 
     // Attitude
-    float kR_xy;      // P
-    float kw_xy;      // D
-    float ki_m_xy;    // I
+    float kR_xy;   // P
+    float kw_xy;   // D
+    float ki_m_xy; // I
     float i_range_m_xy;
 
     // Yaw
-    float kR_z;       // P
-    float kw_z;       // D
-    float ki_m_z;     // I
+    float kR_z;   // P
+    float kw_z;   // D
+    float ki_m_z; // I
     float i_range_m_z;
 
     // roll and pitch angular velocity
@@ -76,21 +81,21 @@ typedef struct {
     float accelz;
 } controllerRls_t;
 
-void controllerRlsInit(controllerRls_t* self);
-bool controllerRlsTest(controllerRls_t* self);
-void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *setpoint,
-                                         const sensorData_t *sensors,
-                                         const state_t *state,
-                                         const stabilizerStep_t stabilizerStep);
+void controllerRlsInit(controllerRls_t *self);
+bool controllerRlsTest(controllerRls_t *self);
+void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *setpoint,
+                   const sensorData_t *sensors,
+                   const state_t *state,
+                   const stabilizerStep_t stabilizerStep);
 
 #ifdef CRAZYFLIE_FW
 
 void controllerRlsFirmwareInit(void);
 bool controllerRlsFirmwareTest(void);
 void controllerRlsFirmware(control_t *control, const setpoint_t *setpoint,
-                                         const sensorData_t *sensors,
-                                         const state_t *state,
-                                         const stabilizerStep_t stabilizerStep);
+                           const sensorData_t *sensors,
+                           const state_t *state,
+                           const stabilizerStep_t stabilizerStep);
 
 #endif // CRAZYFLIE_FW
 
