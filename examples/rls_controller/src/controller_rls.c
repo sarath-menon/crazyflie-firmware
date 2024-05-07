@@ -52,6 +52,35 @@ void initialize_matrices(float A[N][N], float B[N][M], float m) {
 }
 
 
+void compute_setpoint_viaLQR(float K_star[M][N], float error_inertial[N], float curr_yaw, float u[M]) {
+
+    float error_body[N];
+    
+    float sinyaw = sin(curr_yaw);
+    float cosyaw = cos(curr_yaw);
+
+    // compute error in inertial frame
+    float error_x_inertial = fmin(fmax(error_inertial[0], -MAX_ERROR_XY), MAX_ERROR_XY);
+    float error_y_inertial = fmin(fmax(error_inertial[1], -MAX_ERROR_XY), MAX_ERROR_XY);
+    float error_z_inertial = fmin(fmax(error_inertial[2], -MAX_ERROR_Z), MAX_ERROR_Z);
+    // float error_yaw_inertial = fmin(fmax(error_inertial[8], -MAX_ERROR_YAW), MAX_ERROR_YAW);
+
+    // convert error to body frame
+    error_body[0] = error_x_inertial * cosyaw + error_y_inertial * sinyaw;
+    error_body[1] = error_y_inertial * cosyaw - error_x_inertial * sinyaw;
+    error_body[2] = error_z_inertial;
+    error_body[3] = error_inertial[3] * cosyaw + error_inertial[4] * sinyaw;
+    error_body[4] = error_inertial[4] * cosyaw - error_inertial[3] * sinyaw;
+
+    // compute control input in body frame
+    for (int i = 0; i < 4; i++) {
+        u[i] = 0;
+        for (int j = 0; j < 1; j++) {
+            u[i] += -K_star[i][j] * error_body[j];
+        }
+    }
+}
+
 // Global state variable used in the
 // firmware as the only instance and in bindings
 // to hold the default values
@@ -144,6 +173,7 @@ void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *
                                          const stabilizerStep_t stabilizerStep)
 {
    float errorArray[N];
+   float control_input[M];
 
   control->controlMode = controlModeLegacy;
 
@@ -173,7 +203,13 @@ void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *
       errorArray[i] = setpointArray[i] - stateArray[i];
   }
 
-  
+  compute_setpoint_viaLQR(self->K_star, errorArray, state->attitude.yaw, control_input);
+
+  // add feedforward thrust to LQR output
+  self->cmd_thrust = control_input[0] + self->mass * GRAVITY_MAGNITUDE;
+  self->cmd_roll_rate = control_input[1];
+  self->cmd_pitch_rate = control_input[2];
+  self->cmd_yaw_rate = control_input[3];
 }
 
 
@@ -284,9 +320,9 @@ PARAM_GROUP_STOP(ctrlMel)
  */
 LOG_GROUP_START(ctrlMel)
 LOG_ADD(LOG_FLOAT, cmd_thrust, &g_self.cmd_thrust)
-LOG_ADD(LOG_FLOAT, cmd_roll, &g_self.cmd_roll)
-LOG_ADD(LOG_FLOAT, cmd_pitch, &g_self.cmd_pitch)
-LOG_ADD(LOG_FLOAT, cmd_yaw, &g_self.cmd_yaw)
+LOG_ADD(LOG_FLOAT, cmd_roll, &g_self.cmd_roll_rate)
+LOG_ADD(LOG_FLOAT, cmd_pitch, &g_self.cmd_pitch_rate)
+LOG_ADD(LOG_FLOAT, cmd_yaw, &g_self.cmd_yaw_rate)
 LOG_ADD(LOG_FLOAT, r_roll, &g_self.r_roll)
 LOG_ADD(LOG_FLOAT, r_pitch, &g_self.r_pitch)
 LOG_ADD(LOG_FLOAT, r_yaw, &g_self.r_yaw)

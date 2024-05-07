@@ -6,7 +6,13 @@
 
 #define N 9
 #define M 4
-#define DELTA_T (float)0.002
+#define DELTA_T 0.002f
+
+#define MAX_ERROR_XY 0.3f
+#define MAX_ERROR_Z 0.4f
+#define MAX_ERROR_YAW 1.0472f // approximately 60 degrees in radians
+
+
 
 typedef struct {
     float mass;
@@ -61,9 +67,9 @@ typedef struct {
     struct vec z_axis_desired;
 
     float cmd_thrust;
-    float cmd_roll;
-    float cmd_pitch;
-    float cmd_yaw;
+    float cmd_roll_rate;
+    float cmd_pitch_rate;
+    float cmd_yaw_rate;
     float r_roll;
     float r_pitch;
     float r_yaw;
