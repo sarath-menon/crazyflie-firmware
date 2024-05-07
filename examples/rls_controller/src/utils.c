@@ -80,7 +80,7 @@ void compute_setpoint_viaLQR(float K_star[M][N], float error_inertial[N], float 
     }
 }
 
-void predict_future_targets(controllerRls_t *self, setpoint_t *setpoint)
+void predict_future_targets(controllerRls_t *self, const setpoint_t *setpoint)
 {
 
     uint32_t N_setpoints_recv = commanderGetNSetpointsReceived();
@@ -102,7 +102,7 @@ void predict_future_targets(controllerRls_t *self, setpoint_t *setpoint)
 
     // Arrays to store pred_target_state and disturbance from each iteration
     float pred_target_state_full[W_RLS][N_OF_INTEREST];
-    float disturbances_predicted[W_RLS][N_OF_INTEREST];
+    ;
 
     for (int k = 0; k < W_RLS; k++)
     {
@@ -164,7 +164,7 @@ void predict_future_targets(controllerRls_t *self, setpoint_t *setpoint)
         // append disturbance to  disturbances_predicted
         for (int i = 0; i < N_OF_INTEREST; i++)
         {
-            disturbances_predicted[k][i] += disturbance[i];
+            self->disturbances_predicted[k][i] += disturbance[i];
         }
 
         // Update the last predicted state to the current one for the next iteration
