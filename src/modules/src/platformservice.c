@@ -35,12 +35,7 @@
 #include "config.h"
 #include "crtp.h"
 #include "platformservice.h"
-
-
-#ifndef SITL_CF2
 #include "syslink.h"
-#endif
-
 #include "version.h"
 #include "platform.h"
 #include "app_channel.h"
@@ -119,15 +114,8 @@ static void platformSrvTask(void* prm)
 
 static void platformCommandProcess(CRTPPacket *p)
 {
-<<<<<<< HEAD
   uint8_t command = p->data[0];
   uint8_t *data = &p->data[1];
-=======
-  #ifdef SITL_CF2
-    return;
-  #else
-  static SyslinkPacket slp;
->>>>>>> 1e2d481142a6ad06f968493bbc7e8d087d2b13b0
 
   switch (command) {
     case setContinuousWave:
@@ -159,7 +147,6 @@ static void platformCommandProcess(CRTPPacket *p)
     default:
       break;
   }
-  #endif
 }
 
 int platformserviceSendAppchannelPacket(CRTPPacket *p)

@@ -207,55 +207,38 @@ bool estimatorKalmanTaskTest() {
 }
 
 static void kalmanTask(void* parameters) {
-  // wait for the system task to initialize
   systemWaitStart();
 
-  // get the current time in ms and ..
   uint32_t nowMs = T2M(xTaskGetTickCount());
   uint32_t nextPredictionMs = nowMs;
 
-  // create rate supervisor to define rate properties
   rateSupervisorInit(&rateSupervisorContext, nowMs, ONE_SECOND, PREDICT_RATE - 1, PREDICT_RATE + 1, 1);
 
   while (true) {
-    // block the data from stabilizer loop 
     xSemaphoreTake(runTaskSemaphore, portMAX_DELAY);
-    
-    // get the current time in ms
     nowMs = T2M(xTaskGetTickCount()); // would be nice if this had a precision higher than 1ms...
 
-    // if the internal state is corrupt, reset state
     if (resetEstimation) {
       estimatorKalmanInit();
       resetEstimation = false;
     }
 
-    // check if vehicle is currently flying
     bool quadIsFlying = supervisorIsFlying();
 
   #ifdef KALMAN_DECOUPLE_XY
     kalmanCoreDecoupleXY(&coreData);
   #endif
 
-    // check if it's time for the prediction step
+    // Run the system dynamics to predict the state forward.
     if (nowMs >= nextPredictionMs) {
       axis3fSubSamplerFinalize(&accSubSampler);
       axis3fSubSamplerFinalize(&gyroSubSampler);
 
-      // Run the system dynamics to predict the state forward.
       kalmanCorePredict(&coreData, &accSubSampler.subSample, &gyroSubSampler.subSample, nowMs, quadIsFlying);
-<<<<<<< HEAD
       nextPredictionMs = nowMs + PREDICTION_UPDATE_INTERVAL_MS;
-=======
 
-      // compute next prediction timestep
-      nextPredictionMs = nowMs + (1000.0f / PREDICT_RATE);
->>>>>>> 1e2d481142a6ad06f968493bbc7e8d087d2b13b0
-
-      // update the no. of predictions in the log
       STATS_CNT_RATE_EVENT(&predictionCounter);
 
-      // validate whether the prediction step is running at the required rate
       if (!rateSupervisorValidate(&rateSupervisorContext, nowMs)) {
         DEBUG_PRINT("WARNING: Kalman prediction rate off (%lu)\n", rateSupervisorLatestCount(&rateSupervisorContext));
       }

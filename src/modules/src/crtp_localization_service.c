@@ -44,9 +44,7 @@
 #include "lighthouse_storage.h"
 #endif
 
-#ifndef SITL_CF2
-  #include "locodeck.h"
-#endif
+#include "locodeck.h"
 
 #include "estimator.h"
 #include "quatcompress.h"
@@ -112,11 +110,9 @@ static positionMeasurement_t ext_pos;
 // Struct for logging pose information
 static poseMeasurement_t ext_pose;
 
-#ifndef SITL_CF2
-  static CRTPPacket pkRange;
-  static uint8_t rangeIndex;
-  static bool enableRangeStreamFloat = false;
-#endif
+static CRTPPacket pkRange;
+static uint8_t rangeIndex;
+static bool enableRangeStreamFloat = false;
 
 #ifdef CONFIG_DECK_LIGHTHOUSE
 static CRTPPacket LhAngle;
@@ -230,22 +226,19 @@ static void extPosePackedHandler(const CRTPPacket* pk) {
 
 static void lpsShortLppPacketHandler(CRTPPacket* pk) {
   if (pk->size >= 2) {
-
-    #ifndef SITL_CF2
-      #ifdef CONFIG_DECK_LOCO
-          bool success = lpsSendLppShort(pk->data[1], &pk->data[2], pk->size-2);
-      #else
-          bool success = false;
-      #endif
-          pk->port = CRTP_PORT_LOCALIZATION;
-          pk->channel = GENERIC_TYPE;
-          pk->size = 3;
-          pk->data[0] = LPS_SHORT_LPP_PACKET;
-          pk->data[2] = success?1:0;
-          // This is best effort, i.e. the blocking version is not needed
-          crtpSendPacket(pk);
-    #endif
-        }
+#ifdef CONFIG_DECK_LOCO
+    bool success = lpsSendLppShort(pk->data[1], &pk->data[2], pk->size-2);
+#else
+    bool success = false;
+#endif
+    pk->port = CRTP_PORT_LOCALIZATION;
+    pk->channel = GENERIC_TYPE;
+    pk->size = 3;
+    pk->data[0] = LPS_SHORT_LPP_PACKET;
+    pk->data[2] = success?1:0;
+    // This is best effort, i.e. the blocking version is not needed
+    crtpSendPacket(pk);
+  }
 }
 
 typedef union {
@@ -344,7 +337,6 @@ static void extPositionPackedHandler(CRTPPacket* pk)
   }
 }
 
-#ifndef SITL_CF2
 void locSrvSendRangeFloat(uint8_t id, float range)
 {
   rangePacket *rp = (rangePacket *)pkRange.data;
@@ -369,7 +361,6 @@ void locSrvSendRangeFloat(uint8_t id, float range)
     }
   }
 }
-#endif
 
 #ifdef CONFIG_DECK_LIGHTHOUSE
 void locSrvSendLighthouseAngle(int baseStation, pulseProcessorResult_t* angles)
@@ -467,8 +458,6 @@ LOG_GROUP_STOP(locSrvZ)
 /**
  * Service parameters for (external) positioning data stream through ctrp
  */
-#ifndef SITL_CF2
-
 PARAM_GROUP_START(locSrv)
 /**
  * @brief Enable CRTP stream of Loco node distance
@@ -487,5 +476,3 @@ PARAM_GROUP_START(locSrv)
  */
   PARAM_ADD_CORE(PARAM_FLOAT, extQuatStdDev, &extQuatStdDev)
 PARAM_GROUP_STOP(locSrv)
-
-#endif

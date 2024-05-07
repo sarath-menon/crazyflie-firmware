@@ -129,7 +129,6 @@ void usblinkInit()
   // Initialize the USB peripheral
   usbInit();
 
-  // create queue fir CRTP data packets
   crtpPacketDelivery = STATIC_MEM_QUEUE_CREATE(crtpPacketDelivery);
   DEBUG_QUEUE_MONITOR_REGISTER(crtpPacketDelivery);
 

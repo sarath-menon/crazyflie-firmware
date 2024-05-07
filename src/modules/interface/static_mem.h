@@ -52,11 +52,7 @@
 #if defined(UNIT_TEST_MODE)
   #define NO_DMA_CCM_SAFE_ZERO_INIT
 #else
-  #ifndef SITL_CF2
-    #define NO_DMA_CCM_SAFE_ZERO_INIT __attribute__((section(".ccmbss")))
-  #else
-    #define NO_DMA_CCM_SAFE_ZERO_INIT
-  #endif
+  #define NO_DMA_CCM_SAFE_ZERO_INIT __attribute__((section(".ccmbss")))
 #endif
 
 /**

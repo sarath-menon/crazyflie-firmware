@@ -110,10 +110,7 @@ void systemInit(void)
   canStartMutex = xSemaphoreCreateMutexStatic(&canStartMutexBuffer);
   xSemaphoreTake(canStartMutex, portMAX_DELAY);
 
-// initialize USB link
   usblinkInit();
-
-  // initialize system load monitor
   sysLoadInit();
 #if CONFIG_ENABLE_CPX
   cpxlinkInit();
@@ -121,8 +118,6 @@ void systemInit(void)
 
   /* Initialized here so that DEBUG_PRINT (buffered) can be used early */
   debugInit();
-
-  // initialize CRTP communication stack
   crtpInit();
   consoleInit();
 

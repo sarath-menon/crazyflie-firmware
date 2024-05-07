@@ -1,6 +1,6 @@
 
 OPENOCD           ?= openocd
-OPENOCD_INTERFACE ?= interface/stlink.cfg
+OPENOCD_INTERFACE ?= interface/stlink-v2.cfg
 OPENOCD_TARGET    ?= target/stm32f4x.cfg
 OPENOCD_CMDS      ?=
 
@@ -19,7 +19,6 @@ endif
 
 DFU_UTIL          ?= dfu-util
 
-<<<<<<< HEAD
 CLOAD_CMDS        ?=
 CLOAD_ARGS        ?=
 
@@ -129,9 +128,6 @@ include tools/make/targets.mk
 
 size:
 	@$(PYTHON) $(srctree)/tools/make/size.py $(SIZE) $(PROG).elf $(MEM_SIZE_FLASH_K) $(MEM_SIZE_RAM_K) $(MEM_SIZE_CCM_K)
-=======
-PROG ?= $(srctree)/build/src/init/cf2
->>>>>>> 1e2d481142a6ad06f968493bbc7e8d087d2b13b0
 
 # Radio bootloader
 CLOAD ?= 1
@@ -158,6 +154,7 @@ flash:
 	$(OPENOCD) -d2 -f $(OPENOCD_INTERFACE) $(OPENOCD_CMDS) -f $(OPENOCD_TARGET) -c init -c targets -c "reset halt" \
                  -c "flash write_image erase $(PROG).bin $(LOAD_ADDRESS) bin" \
                  -c "verify_image $(PROG).bin $(LOAD_ADDRESS) bin" -c "reset run" -c shutdown
+
 #verify only
 flash_verify:
 	$(OPENOCD) -d2 -f $(OPENOCD_INTERFACE) $(OPENOCD_CMDS) -f $(OPENOCD_TARGET) -c init -c targets -c "reset halt" \

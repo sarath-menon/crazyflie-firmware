@@ -7,7 +7,7 @@
  *
  * Crazyflie control firmware
  *
- * Copyright (C) 2022 Bitcraze AB
+ * Copyright (C) 2019 Bitcraze AB
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * hello_world.c - App layer application of a simple hello world debug print every
- *   2 seconds.
+ * internal_log_param_api.c - App layer application of the internal log
+ *  and param api  
  */
 
 
@@ -31,40 +31,42 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <cassert>
-#include <string>
+#include "app.h"
 
-extern "C"
-{
-  #include "app.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
-  #include "FreeRTOS.h"
-  #include "task.h"
+#include "debug.h"
 
-  #include "debug.h"
-}
+#include "log.h"
+#include "param.h"
 
-#define DEBUG_MODULE "HELLOWORLD"
-
-class MyClass {
-  public:
-    int myNum;
-    std::string myString;
-};
+#define DEBUG_MODULE "INTERNLOGPARAM"
 
 void appMain()
 {
-  DEBUG_PRINT("Waiting for activation ...\n");
+  DEBUG_PRINT("This is the App layer example of the internal log param api...\n");
+  logVarId_t idYaw = logGetVarId("stateEstimate", "yaw");
+  float yaw = 0.0f;
 
-  MyClass *cl = new MyClass();
-  DEBUG_PRINT("MyClass has a num: %d\n", cl->myNum);
-
-  /* make sure that the assertion is not simple enough to be optimized away
-   * by the compiler */
-  assert(cl->myNum + cl->myString.size() == 0);
+  paramVarId_t idEstimator = paramGetVarId("stabilizer", "estimator");
+  uint8_t estimator_type = 0;
 
   while(1) {
     vTaskDelay(M2T(2000));
-    DEBUG_PRINT("Hello World!\n");
+
+    // Get the logging data
+    yaw = logGetFloat(idYaw);
+    DEBUG_PRINT("Yaw is now: %f deg\n", (double)yaw);
+
+    // Get parameter value
+    estimator_type = paramGetInt(idEstimator);
+    DEBUG_PRINT("Estimator type is now: %d deg\n", estimator_type);
+
+    // Set a parameter value 
+    //  Note, this will influence the flight quality if you change estimator
+    uint8_t new_value = 2;
+    paramSetInt(idEstimator, new_value);
+    
   }
 }

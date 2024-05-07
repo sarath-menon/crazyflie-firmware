@@ -264,16 +264,11 @@ void crtpCommanderHighLevelInit(void)
     return;
   }
 
-  // memoryRegisterHandler(&memDef);
+  memoryRegisterHandler(&memDef);
   plan_init(&planner);
 
-  // //Start the trajectory task
-  // STATIC_MEM_TASK_CREATE(crtpCommanderHighLevelTask, crtpCommanderHighLevelTask, CMD_HIGH_LEVEL_TASK_NAME, NULL, CMD_HIGH_LEVEL_TASK_PRI);
-
-   //Start the trajectory task
-  xTaskCreate(crtpCommanderHighLevelTask, CMD_HIGH_LEVEL_TASK_NAME,
-              CMD_HIGH_LEVEL_TASK_STACKSIZE, NULL, CMD_HIGH_LEVEL_TASK_PRI, NULL);
-
+  //Start the trajectory task
+  STATIC_MEM_TASK_CREATE(crtpCommanderHighLevelTask, crtpCommanderHighLevelTask, CMD_HIGH_LEVEL_TASK_NAME, NULL, CMD_HIGH_LEVEL_TASK_PRI);
 
   lockTraj = xSemaphoreCreateMutexStatic(&lockTrajBuffer);
 
