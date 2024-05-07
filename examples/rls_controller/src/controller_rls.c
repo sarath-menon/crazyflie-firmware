@@ -143,17 +143,7 @@ void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *
                                          const state_t *state,
                                          const stabilizerStep_t stabilizerStep)
 {
-  struct vec r_error;
-  struct vec v_error;
-  struct vec target_thrust;
-  struct vec z_axis;
-  float current_thrust;
-  struct vec x_axis_desired;
-  struct vec y_axis_desired;
-  struct vec x_c_des;
-  struct vec eR, ew, Moment;
-  float dt;
-  float desiredYaw = 0; //deg
+   float errorArray[N];
 
   control->controlMode = controlModeLegacy;
 
@@ -161,183 +151,29 @@ void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *
     return;
   }
 
-  dt = (float)(1.0f/ATTITUDE_RATE);
-  struct vec setpointPos = mkvec(setpoint->position.x, setpoint->position.y, setpoint->position.z);
-  struct vec setpointVel = mkvec(setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z);
-  struct vec statePos = mkvec(state->position.x, state->position.y, state->position.z);
-  struct vec stateVel = mkvec(state->velocity.x, state->velocity.y, state->velocity.z);
+  // dt = (float)(1.0f/ATTITUDE_RATE);
 
-  // Position Error (ep)
-  r_error = vsub(setpointPos, statePos);
+  // positon and velocity setpoints
+  float setpointArray[9] = {
+    setpoint->position.x, setpoint->position.y, setpoint->position.z,
+    setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
+    setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw
+  };
 
-  // Velocity Error (ev)
-  v_error = vsub(setpointVel, stateVel);
 
-  // Integral Error
-  self->i_error_z += r_error.z * dt;
-  self->i_error_z = clamp(self->i_error_z, -self->i_range_z, self->i_range_z);
+  // positon, velocity, attitude, attitude rate states
+  float stateArray[9] = {
+    state->position.x, state->position.y, state->position.z,
+    state->velocity.x, state->velocity.y, state->velocity.z,
+    state->attitude.roll, state->attitude.pitch, state->attitude.yaw
+  };
 
-  self->i_error_x += r_error.x * dt;
-  self->i_error_x = clamp(self->i_error_x, -self->i_range_xy, self->i_range_xy);
-
-  self->i_error_y += r_error.y * dt;
-  self->i_error_y = clamp(self->i_error_y, -self->i_range_xy, self->i_range_xy);
-
-  // Desired thrust [F_des]
-  if (setpoint->mode.x == modeAbs) {
-    target_thrust.x = self->mass * setpoint->acceleration.x                       + self->kp_xy * r_error.x + self->kd_xy * v_error.x + self->ki_xy * self->i_error_x;
-    target_thrust.y = self->mass * setpoint->acceleration.y                       + self->kp_xy * r_error.y + self->kd_xy * v_error.y + self->ki_xy * self->i_error_y;
-    target_thrust.z = self->mass * (setpoint->acceleration.z + GRAVITY_MAGNITUDE) + self->kp_z  * r_error.z + self->kd_z  * v_error.z + self->ki_z  * self->i_error_z;
-  } else {
-    target_thrust.x = -sinf(radians(setpoint->attitude.pitch));
-    target_thrust.y = -sinf(radians(setpoint->attitude.roll));
-    // In case of a timeout, the commander tries to level, ie. x/y are disabled, but z will use the previous setting
-    // In that case we ignore the last feedforward term for acceleration
-    if (setpoint->mode.z == modeAbs) {
-      target_thrust.z = self->mass * GRAVITY_MAGNITUDE + self->kp_z  * r_error.z + self->kd_z  * v_error.z + self->ki_z  * self->i_error_z;
-    } else {
-      target_thrust.z = 1;
-    }
+  // compute error
+  for (int i = 0; i < N; i++) {
+      errorArray[i] = setpointArray[i] - stateArray[i];
   }
 
-  // Rate-controlled YAW is moving YAW angle setpoint
-  if (setpoint->mode.yaw == modeVelocity) {
-    desiredYaw = state->attitude.yaw + setpoint->attitudeRate.yaw * dt;
-  } else if (setpoint->mode.yaw == modeAbs) {
-    desiredYaw = setpoint->attitude.yaw;
-  } else if (setpoint->mode.quat == modeAbs) {
-    struct quat setpoint_quat = mkquat(setpoint->attitudeQuaternion.x, setpoint->attitudeQuaternion.y, setpoint->attitudeQuaternion.z, setpoint->attitudeQuaternion.w);
-    struct vec rpy = quat2rpy(setpoint_quat);
-    desiredYaw = degrees(rpy.z);
-  }
-
-  // Z-Axis [zB]
-  struct quat q = mkquat(state->attitudeQuaternion.x, state->attitudeQuaternion.y, state->attitudeQuaternion.z, state->attitudeQuaternion.w);
-  struct mat33 R = quat2rotmat(q);
-  z_axis = mcolumn(R, 2);
-
-  // yaw correction (only if position control is not used)
-  if (setpoint->mode.x != modeAbs) {
-    struct vec x_yaw = mcolumn(R, 0);
-    x_yaw.z = 0;
-    x_yaw = vnormalize(x_yaw);
-    struct vec y_yaw = vcross(mkvec(0, 0, 1), x_yaw);
-    struct mat33 R_yaw_only = mcolumns(x_yaw, y_yaw, mkvec(0, 0, 1));
-    target_thrust = mvmul(R_yaw_only, target_thrust);
-  }
-
-  // Current thrust [F]
-  current_thrust = vdot(target_thrust, z_axis);
-
-  // Calculate axis [zB_des]
-  self->z_axis_desired = vnormalize(target_thrust);
-
-  // [xC_des]
-  // x_axis_desired = z_axis_desired x [sin(yaw), cos(yaw), 0]^T
-  x_c_des.x = cosf(radians(desiredYaw));
-  x_c_des.y = sinf(radians(desiredYaw));
-  x_c_des.z = 0;
-  // [yB_des]
-  y_axis_desired = vnormalize(vcross(self->z_axis_desired, x_c_des));
-  // [xB_des]
-  x_axis_desired = vcross(y_axis_desired, self->z_axis_desired);
-
-  // [eR]
-  // Slow version
-  // struct mat33 Rdes = mcolumns(
-  //   mkvec(x_axis_desired.x, x_axis_desired.y, x_axis_desired.z),
-  //   mkvec(y_axis_desired.x, y_axis_desired.y, y_axis_desired.z),
-  //   mkvec(z_axis_desired.x, z_axis_desired.y, z_axis_desired.z));
-
-  // struct mat33 R_transpose = mtranspose(R);
-  // struct mat33 Rdes_transpose = mtranspose(Rdes);
-
-  // struct mat33 eRM = msub(mmult(Rdes_transpose, R), mmult(R_transpose, Rdes));
-
-  // eR.x = eRM.m[2][1];
-  // eR.y = -eRM.m[0][2];
-  // eR.z = eRM.m[1][0];
-
-  // Fast version (generated using Mathematica)
-  float x = q.x;
-  float y = q.y;
-  float z = q.z;
-  float w = q.w;
-  eR.x = (-1 + 2*fsqr(x) + 2*fsqr(y))*y_axis_desired.z + self->z_axis_desired.y - 2*(x*y_axis_desired.x*z + y*y_axis_desired.y*z - x*y*self->z_axis_desired.x + fsqr(x)*self->z_axis_desired.y + fsqr(z)*self->z_axis_desired.y - y*z*self->z_axis_desired.z) +    2*w*(-(y*y_axis_desired.x) - z*self->z_axis_desired.x + x*(y_axis_desired.y + self->z_axis_desired.z));
-  eR.y = x_axis_desired.z - self->z_axis_desired.x - 2*(fsqr(x)*x_axis_desired.z + y*(x_axis_desired.z*y - x_axis_desired.y*z) - (fsqr(y) + fsqr(z))*self->z_axis_desired.x + x*(-(x_axis_desired.x*z) + y*self->z_axis_desired.y + z*self->z_axis_desired.z) + w*(x*x_axis_desired.y + z*self->z_axis_desired.y - y*(x_axis_desired.x + self->z_axis_desired.z)));
-  eR.z = y_axis_desired.x - 2*(y*(x*x_axis_desired.x + y*y_axis_desired.x - x*y_axis_desired.y) + w*(x*x_axis_desired.z + y*y_axis_desired.z)) + 2*(-(x_axis_desired.z*y) + w*(x_axis_desired.x + y_axis_desired.y) + x*y_axis_desired.z)*z - 2*y_axis_desired.x*fsqr(z) + x_axis_desired.y*(-1 + 2*fsqr(x) + 2*fsqr(z));
-
-  // Account for Crazyflie coordinate system
-  eR.y = -eR.y;
-
-  // [ew]
-  float err_d_roll = 0;
-  float err_d_pitch = 0;
-
-  float stateAttitudeRateRoll = radians(sensors->gyro.x);
-  float stateAttitudeRatePitch = -radians(sensors->gyro.y);
-  float stateAttitudeRateYaw = radians(sensors->gyro.z);
-
-  ew.x = radians(setpoint->attitudeRate.roll) - stateAttitudeRateRoll;
-  ew.y = -radians(setpoint->attitudeRate.pitch) - stateAttitudeRatePitch;
-  ew.z = radians(setpoint->attitudeRate.yaw) - stateAttitudeRateYaw;
-  if (self->prev_omega_roll == self->prev_omega_roll) { /*d part initialized*/
-    err_d_roll = ((radians(setpoint->attitudeRate.roll) - self->prev_setpoint_omega_roll) - (stateAttitudeRateRoll - self->prev_omega_roll)) / dt;
-    err_d_pitch = (-(radians(setpoint->attitudeRate.pitch) - self->prev_setpoint_omega_pitch) - (stateAttitudeRatePitch - self->prev_omega_pitch)) / dt;
-  }
-  self->prev_omega_roll = stateAttitudeRateRoll;
-  self->prev_omega_pitch = stateAttitudeRatePitch;
-  self->prev_setpoint_omega_roll = radians(setpoint->attitudeRate.roll);
-  self->prev_setpoint_omega_pitch = radians(setpoint->attitudeRate.pitch);
-
-  // Integral Error
-  self->i_error_m_x += (-eR.x) * dt;
-  self->i_error_m_x = clamp(self->i_error_m_x, -self->i_range_m_xy, self->i_range_m_xy);
-
-  self->i_error_m_y += (-eR.y) * dt;
-  self->i_error_m_y = clamp(self->i_error_m_y, -self->i_range_m_xy, self->i_range_m_xy);
-
-  self->i_error_m_z += (-eR.z) * dt;
-  self->i_error_m_z = clamp(self->i_error_m_z, -self->i_range_m_z, self->i_range_m_z);
-
-  // Moment:
-  Moment.x = -self->kR_xy * eR.x + self->kw_xy * ew.x + self->ki_m_xy * self->i_error_m_x + self->kd_omega_rp * err_d_roll;
-  Moment.y = -self->kR_xy * eR.y + self->kw_xy * ew.y + self->ki_m_xy * self->i_error_m_y + self->kd_omega_rp * err_d_pitch;
-  Moment.z = -self->kR_z  * eR.z + self->kw_z  * ew.z + self->ki_m_z  * self->i_error_m_z;
-
-  // Output
-  if (setpoint->mode.z == modeDisable) {
-    control->thrust = setpoint->thrust;
-  } else {
-    control->thrust = self->massThrust * current_thrust;
-  }
-
-  self->cmd_thrust = control->thrust;
-  self->r_roll = radians(sensors->gyro.x);
-  self->r_pitch = -radians(sensors->gyro.y);
-  self->r_yaw = radians(sensors->gyro.z);
-  self->accelz = sensors->acc.z;
-
-  if (control->thrust > 0) {
-    control->roll = clamp(Moment.x, -32000, 32000);
-    control->pitch = clamp(Moment.y, -32000, 32000);
-    control->yaw = clamp(-Moment.z, -32000, 32000);
-
-    self->cmd_roll = control->roll;
-    self->cmd_pitch = control->pitch;
-    self->cmd_yaw = control->yaw;
-
-  } else {
-    control->roll = 0;
-    control->pitch = 0;
-    control->yaw = 0;
-
-    self->cmd_roll = control->roll;
-    self->cmd_pitch = control->pitch;
-    self->cmd_yaw = control->yaw;
-
-    controllerRlsReset(self);
-  }
+  
 }
 
 

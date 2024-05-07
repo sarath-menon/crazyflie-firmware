@@ -6,9 +6,7 @@
 
 #define N 9
 #define M 4
-#define DELTA_T (float)0.005
-
-
+#define DELTA_T (float)0.002
 
 typedef struct {
     float mass;
