@@ -30,17 +30,24 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifndef SITL_CF2
+#include "uart_syslink.h"
+
 void systemInit(void);
 bool systemTest(void);
 
 void systemLaunch(void);
-
 
 void systemStart();
 void systemWaitStart(void);
 
 void systemRequestShutdown();
 void systemRequestNRFVersion();
-void systemSyslinkReceive();
+void systemSyslinkReceive(SyslinkPacket *slp);
+
+#else
+void systemInit(void);
+void systemLaunch(void);
+#endif
 
 #endif //__SYSTEM_H__
