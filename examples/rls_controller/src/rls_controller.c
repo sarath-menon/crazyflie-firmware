@@ -30,13 +30,11 @@ void appMain() {
 
 // Call the PID controller in this example to make it possible to fly. When you implement you own controller, there is
 // no need to include the pid controller.
-#include "controller_pid.h"
+#include "controller_rls.h"
 
 void controllerOutOfTreeInit() {
   // Initialize your controller data here...
-
-  // Call the PID controller instead in this example to make it possible to fly
-  controllerPidInit();
+  controllerRlsInit();
 }
 
 bool controllerOutOfTreeTest() {
@@ -50,5 +48,5 @@ void controllerOutOfTree(control_t *control, const setpoint_t *setpoint, const s
   // ddkdod
 
   // Call the PID controller instead in this example to make it possible to fly
-  controllerPid(control, setpoint, sensors, state, tick);
+  controllerRls(control, setpoint, sensors, state, tick);
 }

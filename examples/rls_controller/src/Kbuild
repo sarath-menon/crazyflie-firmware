@@ -1,1 +1,2 @@
 obj-y += rls_controller.o
+obj-y += controller_rls.o
