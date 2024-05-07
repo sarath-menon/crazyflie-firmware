@@ -1,39 +1,3 @@
-/*
-The MIT License (MIT)
-
-Copyright (c) 2018 Wolfgang Hoenig and James Alan Preiss
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-/*
-This controller is based on the following publication:
-
-Daniel Rls, Vijay Kumar:
-Minimum snap trajectory generation and control for quadrotors.
-IEEE International Conference on Robotics and Automation (ICRA), 2011.
-
-We added the following:
- * Integral terms (compensates for: battery voltage drop over time, unbalanced center of mass due to asymmetries, and uneven wear on propellers and motors)
- * D-term for angular velocity
- * Support to use this controller as an attitude-only controller for manual flight
-*/
 
 #include <math.h>
 
@@ -43,6 +7,50 @@ We added the following:
 #include "controller_rls.h"
 #include "physicalConstants.h"
 #include "platform_defaults.h"
+
+
+void initialize_matrices(float A[N][N], float B[N][M], float m) {
+    // Initialize matrix A_outer
+    float A_outer[N][N] = {
+        {0, 0, 0, 1, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 1, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 1, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, GRAVITY_MAGNITUDE, 0},
+        {0, 0, 0, 0, 0, 0, -GRAVITY_MAGNITUDE, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0}
+    };
+
+    // Initialize matrix B_outer
+    float B_outer[N][M] = {
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {0, 0, 0, 0},
+        {1/m, 0, 0, 0},
+        {0, 1, 0, 0},
+        {0, 0, 1, 0},
+        {0, 0, 0, 1}
+    };
+
+    // Compute A = I + DELTA_T * A_outer
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            A[i][j] = (float)(i == j ? 1.0 : 0.0) + DELTA_T * A_outer[i][j];
+        }
+    }
+
+    // Compute B = DELTA_T * B_outer
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
+            B[i][j] = DELTA_T * (float)B_outer[i][j];
+        }
+    }
+}
+
 
 // Global state variable used in the
 // firmware as the only instance and in bindings
@@ -105,6 +113,9 @@ void controllerRlsInit(controllerRls_t* self)
   // copy default values (bindings), or does nothing (firmware)
   *self = g_self;
 
+  // initialize A,B matrices for the LQR controller
+  initialize_matrices(self->A, self->B, self->mass);
+
   controllerRlsReset(self);
 }
 
@@ -126,7 +137,7 @@ void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *
   struct vec x_axis_desired;
   struct vec y_axis_desired;
   struct vec x_c_des;
-  struct vec eR, ew, M;
+  struct vec eR, ew, Moment;
   float dt;
   float desiredYaw = 0; //deg
 
@@ -276,9 +287,9 @@ void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *
   self->i_error_m_z = clamp(self->i_error_m_z, -self->i_range_m_z, self->i_range_m_z);
 
   // Moment:
-  M.x = -self->kR_xy * eR.x + self->kw_xy * ew.x + self->ki_m_xy * self->i_error_m_x + self->kd_omega_rp * err_d_roll;
-  M.y = -self->kR_xy * eR.y + self->kw_xy * ew.y + self->ki_m_xy * self->i_error_m_y + self->kd_omega_rp * err_d_pitch;
-  M.z = -self->kR_z  * eR.z + self->kw_z  * ew.z + self->ki_m_z  * self->i_error_m_z;
+  Moment.x = -self->kR_xy * eR.x + self->kw_xy * ew.x + self->ki_m_xy * self->i_error_m_x + self->kd_omega_rp * err_d_roll;
+  Moment.y = -self->kR_xy * eR.y + self->kw_xy * ew.y + self->ki_m_xy * self->i_error_m_y + self->kd_omega_rp * err_d_pitch;
+  Moment.z = -self->kR_z  * eR.z + self->kw_z  * ew.z + self->ki_m_z  * self->i_error_m_z;
 
   // Output
   if (setpoint->mode.z == modeDisable) {
@@ -294,9 +305,9 @@ void controllerRls(controllerRls_t* self, control_t *control, const setpoint_t *
   self->accelz = sensors->acc.z;
 
   if (control->thrust > 0) {
-    control->roll = clamp(M.x, -32000, 32000);
-    control->pitch = clamp(M.y, -32000, 32000);
-    control->yaw = clamp(-M.z, -32000, 32000);
+    control->roll = clamp(Moment.x, -32000, 32000);
+    control->pitch = clamp(Moment.y, -32000, 32000);
+    control->yaw = clamp(-Moment.z, -32000, 32000);
 
     self->cmd_roll = control->roll;
     self->cmd_pitch = control->pitch;
