@@ -80,29 +80,62 @@ void compute_setpoint_viaLQR(float K_star[M][N], float error_inertial[N], float 
     }
 }
 
-void predict_future_targets(setpoint_t *setpoint)
+void predict_future_targets(controllerRls_t *self, setpoint_t *setpoint)
 {
 
-    // uint32_t N_setpoints_recv = commanderGetNSetpointsReceived();
+    uint32_t N_setpoints_recv = commanderGetNSetpointsReceived();
 
-    // // positon and velocity setpoints
-    // float curr_target_state[6] = {
-    //     setpoint->position.x,
-    //     setpoint->position.y,
-    //     setpoint->position.z,
-    //     setpoint->velocity.x,
-    //     setpoint->velocity.y,
-    //     setpoint->velocity.z,
-    // };
+    // positon and velocity setpoints
+    float curr_target_state[N_OF_INTEREST] = {
+        setpoint->position.x,
+        setpoint->position.y,
+        setpoint->position.z,
+        setpoint->velocity.x,
+        setpoint->velocity.y,
+        setpoint->velocity.z,
+    };
 
     // float last_pred_target_state_full[N] = {
     //     setpoint->position.x, setpoint->position.y, setpoint->position.z,
     //     setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
     //     setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
 
-    // for (int k = 0; k < W_RLS; k++)
-    // {
-    //     // Calculate learner index for cyclic learning rate adjustment
-    //     int learner_idx = (N_setpoints_recv - 1) % k;
-    // }
+    float all_pred_target_states[W_RLS][N_OF_INTEREST]; // Array to store pred_target_state from each iteration
+
+    for (int k = 0; k < W_RLS; k++)
+    {
+        // Calculate learner index for cyclic learning rate adjustment
+        int learner_idx = (N_setpoints_recv - 1) % k;
+
+        // Define a submatrix for the k-step prediction
+        float S_target_k_step[N_OF_INTEREST][N_OF_INTEREST];
+
+        // Populate the submatrix using the augmented target matrices for the specified learner index
+        for (int i = 0; i < N_OF_INTEREST; i++)
+        {
+            for (int j = 0; j < N_OF_INTEREST; j++)
+            {
+                // Retrieve the value from the augmented matrix of the previous time step
+                S_target_k_step[i][j] = self->S_target_aug_all[k - 1][learner_idx][i][j];
+            }
+        }
+
+        // Matrix multiplication: S_target_k_step x curr_target_state
+        float pred_target_state[N_OF_INTEREST];
+
+        for (int i = 0; i < N_OF_INTEREST; i++)
+        {
+            pred_target_state[i] = 0; // Initialize the predicted state element
+            for (int j = 0; j < N_OF_INTEREST; j++)
+            {
+                pred_target_state[i] += S_target_k_step[i][j] * curr_target_state[j];
+            }
+        }
+
+        // Store the computed pred_target_state for this iteration
+        for (int i = 0; i < N_OF_INTEREST; i++)
+        {
+            all_pred_target_states[k][i] = pred_target_state[i];
+        }
+    }
 }
