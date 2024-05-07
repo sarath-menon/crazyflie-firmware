@@ -1,8 +1,10 @@
 #include "utils.h"
 #include "stabilizer_types.h"
 #include "physicalConstants.h"
+#include "commander.h"
 
-void initialize_matrices(float A[N][N], float B[N][M], float m) {
+void initialize_matrices(float A[N][N], float B[N][M], float m)
+{
     // Initialize matrix A_outer
     float A_outer[N][N] = {
         {0, 0, 0, 1, 0, 0, 0, 0, 0},
@@ -13,8 +15,7 @@ void initialize_matrices(float A[N][N], float B[N][M], float m) {
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0}
-    };
+        {0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
     // Initialize matrix B_outer
     float B_outer[N][M] = {
@@ -23,31 +24,35 @@ void initialize_matrices(float A[N][N], float B[N][M], float m) {
         {0, 0, 0, 0},
         {0, 0, 0, 0},
         {0, 0, 0, 0},
-        {1/m, 0, 0, 0},
+        {1 / m, 0, 0, 0},
         {0, 1, 0, 0},
         {0, 0, 1, 0},
-        {0, 0, 0, 1}
-    };
+        {0, 0, 0, 1}};
 
     // Compute A = I + DELTA_T * A_outer
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < N; j++)
+        {
             A[i][j] = (float)(i == j ? 1.0 : 0.0) + DELTA_T * A_outer[i][j];
         }
     }
 
     // Compute B = DELTA_T * B_outer
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
+    for (int i = 0; i < N; i++)
+    {
+        for (int j = 0; j < M; j++)
+        {
             B[i][j] = DELTA_T * (float)B_outer[i][j];
         }
     }
 }
 
-void compute_setpoint_viaLQR(float K_star[M][N], float error_inertial[N], float curr_yaw, float u[M]) {
+void compute_setpoint_viaLQR(float K_star[M][N], float error_inertial[N], float curr_yaw, float u[M])
+{
 
     float error_body[N];
-    
+
     float sinyaw = sin(curr_yaw);
     float cosyaw = cos(curr_yaw);
 
@@ -65,10 +70,39 @@ void compute_setpoint_viaLQR(float K_star[M][N], float error_inertial[N], float 
     error_body[4] = error_inertial[4] * cosyaw - error_inertial[3] * sinyaw;
 
     // compute control input in body frame
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++)
+    {
         u[i] = 0;
-        for (int j = 0; j < 1; j++) {
+        for (int j = 0; j < 1; j++)
+        {
             u[i] += -K_star[i][j] * error_body[j];
         }
     }
+}
+
+void predict_future_targets(setpoint_t *setpoint)
+{
+
+    // uint32_t N_setpoints_recv = commanderGetNSetpointsReceived();
+
+    // // positon and velocity setpoints
+    // float curr_target_state[6] = {
+    //     setpoint->position.x,
+    //     setpoint->position.y,
+    //     setpoint->position.z,
+    //     setpoint->velocity.x,
+    //     setpoint->velocity.y,
+    //     setpoint->velocity.z,
+    // };
+
+    // float last_pred_target_state_full[N] = {
+    //     setpoint->position.x, setpoint->position.y, setpoint->position.z,
+    //     setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
+    //     setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
+
+    // for (int k = 0; k < W_RLS; k++)
+    // {
+    //     // Calculate learner index for cyclic learning rate adjustment
+    //     int learner_idx = (N_setpoints_recv - 1) % k;
+    // }
 }
