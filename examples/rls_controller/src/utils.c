@@ -95,12 +95,14 @@ void predict_future_targets(controllerRls_t *self, setpoint_t *setpoint)
         setpoint->velocity.z,
     };
 
-    // float last_pred_target_state_full[N] = {
-    //     setpoint->position.x, setpoint->position.y, setpoint->position.z,
-    //     setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
-    //     setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
+    float last_pred_target_state_full[N] = {
+        setpoint->position.x, setpoint->position.y, setpoint->position.z,
+        setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
+        setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
 
-    float all_pred_target_states[W_RLS][N_OF_INTEREST]; // Array to store pred_target_state from each iteration
+    // Arrays to store pred_target_state and disturbance from each iteration
+    float pred_target_state_full[W_RLS][N_OF_INTEREST];
+    float disturbances_predicted[W_RLS][N_OF_INTEREST];
 
     for (int k = 0; k < W_RLS; k++)
     {
@@ -135,7 +137,40 @@ void predict_future_targets(controllerRls_t *self, setpoint_t *setpoint)
         // Store the computed pred_target_state for this iteration
         for (int i = 0; i < N_OF_INTEREST; i++)
         {
-            all_pred_target_states[k][i] = pred_target_state[i];
+            pred_target_state_full[k][i] = pred_target_state[i];
+        }
+
+        float pred_target_state_full_complete[N] = {0}; // Initialize a full state vector with zeros
+
+        // Insert the predicted state into the full state vector
+        for (int i = 0; i < N_OF_INTEREST; i++)
+        {
+            pred_target_state_full_complete[IDX_OF_INTEREST[i]] = pred_target_state_full[k][i];
+        }
+
+        float disturbance[N_OF_INTEREST];
+
+        // Perform matrix multiplication and subtraction: A * last_pred_target_state_full - pred_target_state_full[k]
+        for (int i = 0; i < N_OF_INTEREST; i++)
+        {
+            disturbance[i] = 0; // Initialize the disturbance element
+            for (int j = 0; j < N_OF_INTEREST; j++)
+            {
+                disturbance[i] += self->A[i][j] * last_pred_target_state_full[j];
+            }
+            disturbance[i] -= pred_target_state_full[k][i];
+        }
+
+        // append disturbance to  disturbances_predicted
+        for (int i = 0; i < N_OF_INTEREST; i++)
+        {
+            disturbances_predicted[k][i] += disturbance[i];
+        }
+
+        // Update the last predicted state to the current one for the next iteration
+        for (int i = 0; i < N_OF_INTEREST; i++)
+        {
+            last_pred_target_state_full[i] = pred_target_state_full[k][i];
         }
     }
 }
