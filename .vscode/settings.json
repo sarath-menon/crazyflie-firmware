@@ -8,6 +8,8 @@
     "bootloader.h": "c",
     "controller.h": "c",
     "controller_mellinger.h": "c",
-    "math3d.h": "c"
+    "math3d.h": "c",
+    "controller_rls.h": "c",
+    "commander.h": "c"
   }
 }

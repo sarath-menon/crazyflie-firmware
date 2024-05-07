@@ -79,9 +79,9 @@ void controllerRlsInit(controllerRls_t *self)
       {3.2, 0, 0, 2.0, 0, 0, 0, 4.0, 0},
       {0, 0, 0, 0, 0, 0, 0, 0, 2.3}};
 
-  for (int i = 0; i < 4; i++)
+  for (int i = 0; i < M; i++)
   {
-    for (int j = 0; j < 9; j++)
+    for (int j = 0; j < N; j++)
     {
       self->K_star[i][j] = K_star[i][j];
     }
@@ -94,6 +94,13 @@ void controllerRlsInit(controllerRls_t *self)
     {
       create_identity_matrix((float *)self->S_target_aug_all[w][k], N_OF_INTEREST);
     }
+  }
+
+  // Initialize matrix p
+  create_identity_matrix((float *)self->P, N_OF_INTEREST);
+  for (int i = 0; i < N_OF_INTEREST; i++)
+  {
+    self->P[i][i] = 1e-5;
   }
 
   controllerRlsReset(self);
