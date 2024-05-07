@@ -113,8 +113,22 @@ void controllerRlsInit(controllerRls_t* self)
   // copy default values (bindings), or does nothing (firmware)
   *self = g_self;
 
-  // initialize A,B matrices for the LQR controller
-  initialize_matrices(self->A, self->B, self->mass);
+  // // initialize A,B matrices for the LQR controller
+  // initialize_matrices(self->A, self->B, self->mass);
+
+  // Initialize K_star for LQR
+  float K_star[M][N] = {
+    {0, 0, 0.98, 0, 0, 0.25, 0, 0, 0},
+    {0, -3.2, 0, 0, -2.0, 0, 4.0, 0, 0},
+    {3.2, 0, 0, 2.0, 0, 0, 0, 4.0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0, 2.3}
+  };
+
+  for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 9; j++) {
+          self->K_star[i][j] = K_star[i][j];
+      }
+  }
 
   controllerRlsReset(self);
 }

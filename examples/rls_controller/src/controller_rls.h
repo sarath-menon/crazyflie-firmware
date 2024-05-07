@@ -8,12 +8,15 @@
 #define M 4
 #define DELTA_T (float)0.005
 
+
+
 typedef struct {
     float mass;
     float massThrust;
 
     float A[N][N];
     float B[N][M];
+    float K_star[M][N];
 
     // XY Position PID
     float kp_xy;      // P
