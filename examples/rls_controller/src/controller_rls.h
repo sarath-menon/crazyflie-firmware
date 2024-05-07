@@ -8,8 +8,9 @@
 #define M 4
 #define DELTA_T 0.002f
 #define W_RLS 5 // prediction horizon
-#define IDX_OF_INTEREST [ 0, 1, 2, 3, 4, 5 ]
 #define N_OF_INTEREST 6
+
+static const int IDX_OF_INTEREST[] = {0, 1, 2, 3, 4, 5};
 
 #define MAX_ERROR_XY 0.3f
 #define MAX_ERROR_Z 0.4f
