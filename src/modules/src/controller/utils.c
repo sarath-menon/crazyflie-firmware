@@ -80,102 +80,102 @@ void compute_setpoint_viaLQR(float K_star[M_][N_], float error_inertial[N_], flo
     }
 }
 
-void predict_future_targets(controllerRls_t *self, const setpoint_t *setpoint)
-{
+// void predict_future_targets(controllerRls_t *self, const setpoint_t *setpoint)
+// {
 
-    uint32_t N_setpoints_recv = commanderGetNSetpointsReceived();
+//     uint32_t N_setpoints_recv = commanderGetNSetpointsReceived();
 
-    // positon and velocity setpoints
-    float curr_target_state[N_OF_INTEREST] = {
-        setpoint->position.x,
-        setpoint->position.y,
-        setpoint->position.z,
-        setpoint->velocity.x,
-        setpoint->velocity.y,
-        setpoint->velocity.z,
-    };
+//     // positon and velocity setpoints
+//     float curr_target_state[N_OF_INTEREST] = {
+//         setpoint->position.x,
+//         setpoint->position.y,
+//         setpoint->position.z,
+//         setpoint->velocity.x,
+//         setpoint->velocity.y,
+//         setpoint->velocity.z,
+//     };
 
-    float last_pred_target_state_full[N_] = {
-        setpoint->position.x, setpoint->position.y, setpoint->position.z,
-        setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
-        setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
+//     float last_pred_target_state_full[N_] = {
+//         setpoint->position.x, setpoint->position.y, setpoint->position.z,
+//         setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
+//         setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
 
-    // Arrays to store pred_target_state and disturbance from each iteration
-    float pred_target_state_full[W_RLS][N_OF_INTEREST];
-    ;
+//     // Arrays to store pred_target_state and disturbance from each iteration
+//     float pred_target_state_full[W_RLS][N_OF_INTEREST];
+//     ;
 
-    for (int k = 0; k < W_RLS; k++)
-    {
-        // Calculate learner index for cyclic learning rate adjustment
-        int learner_idx = (N_setpoints_recv - 1) % k;
+//     for (int k = 0; k < W_RLS; k++)
+//     {
+//         // Calculate learner index for cyclic learning rate adjustment
+//         int learner_idx = (N_setpoints_recv - 1) % k;
 
-        // Define a submatrix for the k-step prediction
-        float S_target_k_step[N_OF_INTEREST][N_OF_INTEREST];
+//         // Define a submatrix for the k-step prediction
+//         float S_target_k_step[N_OF_INTEREST][N_OF_INTEREST];
 
-        // Populate the submatrix using the augmented target matrices for the specified learner index
-        for (int i = 0; i < N_OF_INTEREST; i++)
-        {
-            for (int j = 0; j < N_OF_INTEREST; j++)
-            {
-                // Retrieve the value from the augmented matrix of the previous time step
-                S_target_k_step[i][j] = self->S_target_aug_all[k - 1][learner_idx][i][j];
-            }
-        }
+//         // Populate the submatrix using the augmented target matrices for the specified learner index
+//         for (int i = 0; i < N_OF_INTEREST; i++)
+//         {
+//             for (int j = 0; j < N_OF_INTEREST; j++)
+//             {
+//                 // Retrieve the value from the augmented matrix of the previous time step
+//                 S_target_k_step[i][j] = self->S_target_aug_all[k - 1][learner_idx][i][j];
+//             }
+//         }
 
-        // Matrix multiplication: S_target_k_step x curr_target_state
-        float pred_target_state[N_OF_INTEREST];
+//         // Matrix multiplication: S_target_k_step x curr_target_state
+//         float pred_target_state[N_OF_INTEREST];
 
-        for (int i = 0; i < N_OF_INTEREST; i++)
-        {
-            pred_target_state[i] = 0; // Initialize the predicted state element
-            for (int j = 0; j < N_OF_INTEREST; j++)
-            {
-                pred_target_state[i] += S_target_k_step[i][j] * curr_target_state[j];
-            }
-        }
+//         for (int i = 0; i < N_OF_INTEREST; i++)
+//         {
+//             pred_target_state[i] = 0; // Initialize the predicted state element
+//             for (int j = 0; j < N_OF_INTEREST; j++)
+//             {
+//                 pred_target_state[i] += S_target_k_step[i][j] * curr_target_state[j];
+//             }
+//         }
 
-        // Store the computed pred_target_state for this iteration
-        for (int i = 0; i < N_OF_INTEREST; i++)
-        {
-            pred_target_state_full[k][i] = pred_target_state[i];
-        }
+//         // Store the computed pred_target_state for this iteration
+//         for (int i = 0; i < N_OF_INTEREST; i++)
+//         {
+//             pred_target_state_full[k][i] = pred_target_state[i];
+//         }
 
-        float pred_target_state_full_complete[N_] = {0}; // Initialize a full state vector with zeros
+//         float pred_target_state_full_complete[N_] = {0}; // Initialize a full state vector with zeros
 
-        // Insert the predicted state into the full state vector
-        for (int i = 0; i < N_OF_INTEREST; i++)
-        {
-            pred_target_state_full_complete[IDX_OF_INTEREST[i]] = pred_target_state_full[k][i];
-        }
+//         // Insert the predicted state into the full state vector
+//         for (int i = 0; i < N_OF_INTEREST; i++)
+//         {
+//             pred_target_state_full_complete[IDX_OF_INTEREST[i]] = pred_target_state_full[k][i];
+//         }
 
-        float disturbance[N_OF_INTEREST];
+//         float disturbance[N_OF_INTEREST];
 
-        // Perform matrix multiplication and subtraction: A * last_pred_target_state_full - pred_target_state_full[k]
-        for (int i = 0; i < N_OF_INTEREST; i++)
-        {
-            disturbance[i] = 0; // Initialize the disturbance element
-            for (int j = 0; j < N_OF_INTEREST; j++)
-            {
-                disturbance[i] += self->A[i][j] * last_pred_target_state_full[j];
-            }
-            disturbance[i] -= pred_target_state_full[k][i];
-        }
+//         // Perform matrix multiplication and subtraction: A * last_pred_target_state_full - pred_target_state_full[k]
+//         for (int i = 0; i < N_OF_INTEREST; i++)
+//         {
+//             disturbance[i] = 0; // Initialize the disturbance element
+//             for (int j = 0; j < N_OF_INTEREST; j++)
+//             {
+//                 disturbance[i] += self->A[i][j] * last_pred_target_state_full[j];
+//             }
+//             disturbance[i] -= pred_target_state_full[k][i];
+//         }
 
-        // append disturbance to  disturbances_predicted
-        for (int i = 0; i < N_OF_INTEREST; i++)
-        {
-            self->disturbances_predicted[k][i] += disturbance[i];
-        }
+//         // append disturbance to  disturbances_predicted
+//         for (int i = 0; i < N_OF_INTEREST; i++)
+//         {
+//             self->disturbances_predicted[k][i] += disturbance[i];
+//         }
 
-        // Update the last predicted state to the current one for the next iteration
-        for (int i = 0; i < N_OF_INTEREST; i++)
-        {
-            last_pred_target_state_full[i] = pred_target_state_full[k][i];
-        }
-    }
-}
+//         // Update the last predicted state to the current one for the next iteration
+//         for (int i = 0; i < N_OF_INTEREST; i++)
+//         {
+//             last_pred_target_state_full[i] = pred_target_state_full[k][i];
+//         }
+//     }
+// }
 
-void RLS_update(controllerRls_t *self)
-{
-    // uint32_t N_setpoints_recv = commanderGetNSetpointsReceived();
-}
+// void RLS_update(controllerRls_t *self)
+// {
+//     // uint32_t N_setpoints_recv = commanderGetNSetpointsReceived();
+// }

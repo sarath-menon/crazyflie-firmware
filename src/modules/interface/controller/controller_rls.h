@@ -25,7 +25,7 @@ typedef struct
     float B[N_][M_];
 
     float K_star[M_][N_];
-    float S_target_aug_all[W_RLS][W_RLS][N_OF_INTEREST][N_OF_INTEREST];
+    // float S_target_aug_all[W_RLS][W_RLS][N_OF_INTEREST][N_OF_INTEREST];
     float P[N_OF_INTEREST][N_OF_INTEREST];
 
     float disturbances_predicted[W_RLS][N_OF_INTEREST];
