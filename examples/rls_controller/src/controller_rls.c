@@ -9,6 +9,13 @@
 #include "platform_defaults.h"
 #include "utils.h"
 #include "math_lib.h"
+#include "attitude_controller.h"
+
+#define ATTITUDE_UPDATE_DT (float)(1.0f / ATTITUDE_RATE)
+
+static attitude_t attitudeDesired;
+static attitude_t rateDesired;
+static float actuatorThrust;
 
 // Global state variable used in the
 // firmware as the only instance and in bindings
@@ -17,51 +24,27 @@ static controllerRls_t g_self = {
     .mass = CF_MASS,
     .massThrust = 132000,
 
-    // XY Position PID
-    .kp_xy = 0.4,  // P
-    .kd_xy = 0.2,  // D
-    .ki_xy = 0.05, // I
-    .i_range_xy = 2.0,
-
-    // Z Position
-    .kp_z = 1.25, // P
-    .kd_z = 0.4,  // D
-    .ki_z = 0.05, // I
-    .i_range_z = 0.4,
-
-    // Attitude
-    .kR_xy = 70000, // P
-    .kw_xy = 20000, // D
-    .ki_m_xy = 0.0, // I
-    .i_range_m_xy = 1.0,
-
-    // Yaw
-    .kR_z = 60000, // P
-    .kw_z = 12000, // D
-    .ki_m_z = 500, // I
-    .i_range_m_z = 1500,
-
-    // roll and pitch angular velocity
-    .kd_omega_rp = 200, // D
-
-    // Helper variables
-    .i_error_x = 0,
-    .i_error_y = 0,
-    .i_error_z = 0,
-
-    .i_error_m_x = 0,
-    .i_error_m_y = 0,
-    .i_error_m_z = 0,
 };
+
+static float capAngle(float angle)
+{
+  float result = angle;
+
+  while (result > 180.0f)
+  {
+    result -= 360.0f;
+  }
+
+  while (result < -180.0f)
+  {
+    result += 360.0f;
+  }
+
+  return result;
+}
 
 void controllerRlsReset(controllerRls_t *self)
 {
-  self->i_error_x = 0;
-  self->i_error_y = 0;
-  self->i_error_z = 0;
-  self->i_error_m_x = 0;
-  self->i_error_m_y = 0;
-  self->i_error_m_z = 0;
 }
 
 void controllerRlsInit(controllerRls_t *self)
@@ -104,6 +87,8 @@ void controllerRlsInit(controllerRls_t *self)
   }
 
   controllerRlsReset(self);
+
+  attitudeControllerInit(ATTITUDE_UPDATE_DT);
 }
 
 bool controllerRlsTest(controllerRls_t *self)
@@ -150,29 +135,102 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
 
   // add feedforward thrust to LQR output
   self->cmd_thrust = control_input[0] + self->mass * GRAVITY_MAGNITUDE;
-  self->cmd_roll_rate = control_input[1];
-  self->cmd_pitch_rate = control_input[2];
-  self->cmd_yaw_rate = control_input[3];
+  rateDesired.roll = control_input[1];
+  rateDesired.pitch = control_input[2];
+  rateDesired.yaw = control_input[3];
 
-  predict_future_targets(self, setpoint);
+  // predict_future_targets(self, setpoint);
 
-  float future_disturbance_feedback[4][1] = {0};
-  for (int i = 0; i < W_RLS; i++)
+  // float future_disturbance_feedback[4][1] = {0};
+  // for (int i = 0; i < W_RLS; i++)
+  // {
+  //   for (int j = 0; j < 4; j++)
+  //   {
+  //     for (int k = 0; k < N_OF_INTEREST; k++)
+  //     {
+  //       future_disturbance_feedback[j][0] -= self->M_optimal_all[j][k] * self->disturbances_predicted[i][k];
+  //     }
+  //   }
+  // }
+
+  // // add to LQR output
+  // self->cmd_thrust += future_disturbance_feedback[0][0];
+  // self->cmd_roll_rate += future_disturbance_feedback[1][0];
+  // self->cmd_pitch_rate += future_disturbance_feedback[2][0];
+  // self->cmd_yaw_rate += future_disturbance_feedback[3][0];
+
+  // Attitude rate controller: copied from controller_pid.c
+  attitudeDesired.yaw = capAngle(attitudeDesired.yaw + setpoint->attitudeRate.yaw * ATTITUDE_UPDATE_DT);
+
+  float yawMaxDelta = attitudeControllerGetYawMaxDelta();
+  if (yawMaxDelta != 0.0f)
   {
-    for (int j = 0; j < 4; j++)
+    float delta = capAngle(attitudeDesired.yaw - state->attitude.yaw);
+    // keep the yaw setpoint within +/- yawMaxDelta from the current yaw
+    if (delta > yawMaxDelta)
     {
-      for (int k = 0; k < N_OF_INTEREST; k++)
-      {
-        future_disturbance_feedback[j][0] -= self->M_optimal_all[j][k] * self->disturbances_predicted[i][k];
-      }
+      attitudeDesired.yaw = state->attitude.yaw + yawMaxDelta;
+    }
+    else if (delta < -yawMaxDelta)
+    {
+      attitudeDesired.yaw = state->attitude.yaw - yawMaxDelta;
     }
   }
+  attitudeDesired.yaw = capAngle(attitudeDesired.yaw);
 
-  // add to LQR output
-  self->cmd_thrust += future_disturbance_feedback[0][0];
-  self->cmd_roll_rate += future_disturbance_feedback[1][0];
-  self->cmd_pitch_rate += future_disturbance_feedback[2][0];
-  self->cmd_yaw_rate += future_disturbance_feedback[3][0];
+  attitudeDesired.roll = setpoint->attitude.roll;
+  attitudeDesired.pitch = setpoint->attitude.pitch;
+
+  attitudeControllerCorrectAttitudePID(state->attitude.roll, state->attitude.pitch, state->attitude.yaw,
+                                       attitudeDesired.roll, attitudeDesired.pitch, attitudeDesired.yaw,
+                                       &rateDesired.roll, &rateDesired.pitch, &rateDesired.yaw);
+
+  // Overwrite rateDesired with the setpoint. Also reset the PID to avoid error buildup, which can lead to unstable
+  rateDesired.roll = setpoint->attitudeRate.roll;
+  rateDesired.pitch = setpoint->attitudeRate.pitch;
+
+  attitudeControllerResetRollAttitudePID();
+  attitudeControllerResetPitchAttitudePID();
+
+  // TODO: Investigate possibility to subtract gyro drift.
+  attitudeControllerCorrectRatePID(sensors->gyro.x, -sensors->gyro.y, sensors->gyro.z,
+                                   rateDesired.roll, rateDesired.pitch, rateDesired.yaw);
+
+  attitudeControllerGetActuatorOutput(&control->roll,
+                                      &control->pitch,
+                                      &control->yaw);
+
+  control->yaw = -control->yaw;
+
+  self->cmd_thrust = control->thrust;
+  self->cmd_roll = control->roll;
+  self->cmd_pitch = control->pitch;
+  self->cmd_yaw = control->yaw;
+  self->r_roll = radians(sensors->gyro.x);
+  self->r_pitch = -radians(sensors->gyro.y);
+  self->r_yaw = radians(sensors->gyro.z);
+  self->accelz = sensors->acc.z;
+
+  control->thrust = actuatorThrust;
+
+  if (control->thrust == 0)
+  {
+    control->thrust = 0;
+    control->roll = 0;
+    control->pitch = 0;
+    control->yaw = 0;
+
+    self->cmd_thrust = control->thrust;
+    self->cmd_roll = control->roll;
+    self->cmd_pitch = control->pitch;
+    self->cmd_yaw = control->yaw;
+
+    attitudeControllerResetAllPID();
+    positionControllerResetAllPID();
+
+    // Reset the calculated YAW angle for rate control
+    attitudeDesired.yaw = state->attitude.yaw;
+  }
 }
 
 void controllerRlsFirmwareInit(void)
@@ -194,104 +252,68 @@ void controllerRlsFirmware(control_t *control, const setpoint_t *setpoint,
 }
 
 /**
- * Tunning variables for the full state Rls Controller
- */
-PARAM_GROUP_START(ctrlMel)
-/**
- * @brief Position P-gain (horizontal xy plane)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, kp_xy, &g_self.kp_xy)
-/**
- * @brief Position D-gain (horizontal xy plane)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, kd_xy, &g_self.kd_xy)
-/**
- * @brief Position I-gain (horizontal xy plane)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, ki_xy, &g_self.ki_xy)
-/**
- * @brief Attitude maximum accumulated error (roll and pitch)
- */
-PARAM_ADD(PARAM_FLOAT | PARAM_PERSISTENT, i_range_xy, &g_self.i_range_xy)
-/**
- * @brief Position P-gain (vertical z plane)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, kp_z, &g_self.kp_z)
-/**
- * @brief Position D-gain (vertical z plane)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, kd_z, &g_self.kd_z)
-/**
- * @brief Position I-gain (vertical z plane)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, ki_z, &g_self.ki_z)
-/**
- * @brief Position maximum accumulated error (vertical z plane)
- */
-PARAM_ADD(PARAM_FLOAT | PARAM_PERSISTENT, i_range_z, &g_self.i_range_z)
-/**
- * @brief total mass [kg]
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, mass, &g_self.mass)
-/**
- * @brief Force to PWM stretch factor
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, massThrust, &g_self.massThrust)
-/**
- * @brief Attitude P-gain (roll and pitch)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, kR_xy, &g_self.kR_xy)
-/**
- * @brief Attitude P-gain (yaw)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, kR_z, &g_self.kR_z)
-/**
- * @brief Attitude D-gain (roll and pitch)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, kw_xy, &g_self.kw_xy)
-/**
- * @brief Attitude D-gain (yaw)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, kw_z, &g_self.kw_z)
-/**
- * @brief Attitude I-gain (roll and pitch)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, ki_m_xy, &g_self.ki_m_xy)
-/**
- * @brief Attitude I-gain (yaw)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, ki_m_z, &g_self.ki_m_z)
-/**
- * @brief Angular velocity D-Gain (roll and pitch)
- */
-PARAM_ADD_CORE(PARAM_FLOAT | PARAM_PERSISTENT, kd_omega_rp, &g_self.kd_omega_rp)
-/**
- * @brief Attitude maximum accumulated error (roll and pitch)
- */
-PARAM_ADD(PARAM_FLOAT | PARAM_PERSISTENT, i_range_m_xy, &g_self.i_range_m_xy)
-/**
- * @brief Attitude maximum accumulated error (yaw)
- */
-PARAM_ADD(PARAM_FLOAT | PARAM_PERSISTENT, i_range_m_z, &g_self.i_range_m_z)
-PARAM_GROUP_STOP(ctrlMel)
-
-/**
  * Logging variables for the command and reference signals for the
- * Rls controller
+ * altitude PID controller
  */
-LOG_GROUP_START(ctrlMel)
+LOG_GROUP_START(controller)
+/**
+ * @brief Thrust command
+ */
 LOG_ADD(LOG_FLOAT, cmd_thrust, &g_self.cmd_thrust)
-LOG_ADD(LOG_FLOAT, cmd_roll, &g_self.cmd_roll_rate)
-LOG_ADD(LOG_FLOAT, cmd_pitch, &g_self.cmd_pitch_rate)
-LOG_ADD(LOG_FLOAT, cmd_yaw, &g_self.cmd_yaw_rate)
+/**
+ * @brief Roll command
+ */
+LOG_ADD(LOG_FLOAT, cmd_roll, &g_self.cmd_roll)
+/**
+ * @brief Pitch command
+ */
+LOG_ADD(LOG_FLOAT, cmd_pitch, &g_self.cmd_pitch)
+/**
+ * @brief yaw command
+ */
+LOG_ADD(LOG_FLOAT, cmd_yaw, &g_self.cmd_yaw)
+/**
+ * @brief Gyro roll measurement in radians
+ */
 LOG_ADD(LOG_FLOAT, r_roll, &g_self.r_roll)
+/**
+ * @brief Gyro pitch measurement in radians
+ */
 LOG_ADD(LOG_FLOAT, r_pitch, &g_self.r_pitch)
+/**
+ * @brief Yaw  measurement in radians
+ */
 LOG_ADD(LOG_FLOAT, r_yaw, &g_self.r_yaw)
+/**
+ * @brief Acceleration in the zaxis in G-force
+ */
 LOG_ADD(LOG_FLOAT, accelz, &g_self.accelz)
-LOG_ADD(LOG_FLOAT, zdx, &g_self.z_axis_desired.x)
-LOG_ADD(LOG_FLOAT, zdy, &g_self.z_axis_desired.y)
-LOG_ADD(LOG_FLOAT, zdz, &g_self.z_axis_desired.z)
-LOG_ADD(LOG_FLOAT, i_err_x, &g_self.i_error_x)
-LOG_ADD(LOG_FLOAT, i_err_y, &g_self.i_error_y)
-LOG_ADD(LOG_FLOAT, i_err_z, &g_self.i_error_z)
-LOG_GROUP_STOP(ctrlMel)
+/**
+ * @brief Thrust command without (tilt)compensation
+ */
+LOG_ADD(LOG_FLOAT, actuatorThrust, &actuatorThrust)
+/**
+ * @brief Desired roll setpoint
+ */
+LOG_ADD(LOG_FLOAT, roll, &attitudeDesired.roll)
+/**
+ * @brief Desired pitch setpoint
+ */
+LOG_ADD(LOG_FLOAT, pitch, &attitudeDesired.pitch)
+/**
+ * @brief Desired yaw setpoint
+ */
+LOG_ADD(LOG_FLOAT, yaw, &attitudeDesired.yaw)
+/**
+ * @brief Desired roll rate setpoint
+ */
+LOG_ADD(LOG_FLOAT, rollRate, &rateDesired.roll)
+/**
+ * @brief Desired pitch rate setpoint
+ */
+LOG_ADD(LOG_FLOAT, pitchRate, &rateDesired.pitch)
+/**
+ * @brief Desired yaw rate setpoint
+ */
+LOG_ADD(LOG_FLOAT, yawRate, &rateDesired.yaw)
+LOG_GROUP_STOP(controller)

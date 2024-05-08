@@ -31,54 +31,10 @@ typedef struct
     float disturbances_predicted[W_RLS][N_OF_INTEREST];
     float M_optimal_all[4][N];
 
-    // XY Position PID
-    float kp_xy; // P
-    float kd_xy; // D
-    float ki_xy; // I
-    float i_range_xy;
-
-    // Z Position
-    float kp_z; // P
-    float kd_z; // D
-    float ki_z; // I
-    float i_range_z;
-
-    // Attitude
-    float kR_xy;   // P
-    float kw_xy;   // D
-    float ki_m_xy; // I
-    float i_range_m_xy;
-
-    // Yaw
-    float kR_z;   // P
-    float kw_z;   // D
-    float ki_m_z; // I
-    float i_range_m_z;
-
-    // roll and pitch angular velocity
-    float kd_omega_rp; // D
-
-    // Helper variables
-    float i_error_x;
-    float i_error_y;
-    float i_error_z;
-
-    float prev_omega_roll;
-    float prev_omega_pitch;
-    float prev_setpoint_omega_roll;
-    float prev_setpoint_omega_pitch;
-
-    float i_error_m_x;
-    float i_error_m_y;
-    float i_error_m_z;
-
-    // Logging variables
-    struct vec z_axis_desired;
-
     float cmd_thrust;
-    float cmd_roll_rate;
-    float cmd_pitch_rate;
-    float cmd_yaw_rate;
+    float cmd_roll;
+    float cmd_pitch;
+    float cmd_yaw;
     float r_roll;
     float r_pitch;
     float r_yaw;
