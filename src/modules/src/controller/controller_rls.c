@@ -195,7 +195,6 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
 
   control->yaw = -control->yaw;
 
-  self->cmd_thrust = control->thrust;
   self->cmd_roll = control->roll;
   self->cmd_pitch = control->pitch;
   self->cmd_yaw = control->yaw;
@@ -208,12 +207,10 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
 
   if (control->thrust == 0)
   {
-    control->thrust = 0;
     control->roll = 0;
     control->pitch = 0;
     control->yaw = 0;
 
-    self->cmd_thrust = control->thrust;
     self->cmd_roll = control->roll;
     self->cmd_pitch = control->pitch;
     self->cmd_yaw = control->yaw;
