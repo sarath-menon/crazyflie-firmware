@@ -66,21 +66,21 @@ void controllerRlsInit(controllerRls_t *self)
     }
   }
 
-  // Initialize each matrix in S_target_aug_all to an identity matrix
-  for (int w = 0; w < W_RLS; w++)
-  {
-    for (int k = 0; k < W_RLS; k++)
-    {
-      create_identity_matrix((float *)self->S_target_aug_all[w][k], N_OF_INTEREST);
-    }
-  }
+  // // Initialize each matrix in S_target_aug_all to an identity matrix
+  // for (int w = 0; w < W_RLS; w++)
+  // {
+  //   for (int k = 0; k < W_RLS; k++)
+  //   {
+  //     create_identity_matrix((float *)self->S_target_aug_all[w][k], N_OF_INTEREST);
+  //   }
+  // }
 
-  // Initialize matrix p
-  create_identity_matrix((float *)self->P, N_OF_INTEREST);
-  for (int i = 0; i < N_OF_INTEREST; i++)
-  {
-    self->P[i][i] = 1e-5;
-  }
+  // // Initialize matrix p
+  // create_identity_matrix((float *)self->P, N_OF_INTEREST);
+  // for (int i = 0; i < N_OF_INTEREST; i++)
+  // {
+  //   self->P[i][i] = 1e-5;
+  // }
 
   attitudeControllerInit(ATTITUDE_UPDATE_DT);
 }
