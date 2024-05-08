@@ -43,10 +43,6 @@ static float capAngle(float angle)
   return result;
 }
 
-void controllerRlsReset(controllerRls_t *self)
-{
-}
-
 void controllerRlsInit(controllerRls_t *self)
 {
   // copy default values (bindings), or does nothing (firmware)
@@ -86,8 +82,6 @@ void controllerRlsInit(controllerRls_t *self)
     self->P[i][i] = 1e-5;
   }
 
-  controllerRlsReset(self);
-
   attitudeControllerInit(ATTITUDE_UPDATE_DT);
 }
 
@@ -108,76 +102,76 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
 
   if (!RATE_DO_EXECUTE(ATTITUDE_RATE, stabilizerStep))
   {
-    return;
-  }
 
-  // dt = (float)(1.0f/ATTITUDE_RATE);
+    // dt = (float)(1.0f/ATTITUDE_RATE);
 
-  // position, velocity, attitude setpoints
-  float setpointArray[9] = {
-      setpoint->position.x, setpoint->position.y, setpoint->position.z,
-      setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
-      setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
+    // position, velocity, attitude setpoints
+    float setpointArray[N] = {
+        setpoint->position.x, setpoint->position.y, setpoint->position.z,
+        setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
+        setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
 
-  // positon, velocity, attitude, attitude rate states
-  float stateArray[9] = {
-      state->position.x, state->position.y, state->position.z,
-      state->velocity.x, state->velocity.y, state->velocity.z,
-      state->attitude.roll, state->attitude.pitch, state->attitude.yaw};
+    // positon, velocity, attitude, attitude rate states
+    float stateArray[N] = {
+        state->position.x, state->position.y, state->position.z,
+        state->velocity.x, state->velocity.y, state->velocity.z,
+        state->attitude.roll, state->attitude.pitch, state->attitude.yaw};
 
-  // compute error
-  for (int i = 0; i < N; i++)
-  {
-    errorArray[i] = setpointArray[i] - stateArray[i];
-  }
-
-  compute_setpoint_viaLQR(self->K_star, errorArray, state->attitude.yaw, control_input);
-
-  // add feedforward thrust to LQR output
-  self->cmd_thrust = control_input[0] + self->mass * GRAVITY_MAGNITUDE;
-  rateDesired.roll = control_input[1];
-  rateDesired.pitch = control_input[2];
-  rateDesired.yaw = control_input[3];
-
-  // predict_future_targets(self, setpoint);
-
-  // float future_disturbance_feedback[4][1] = {0};
-  // for (int i = 0; i < W_RLS; i++)
-  // {
-  //   for (int j = 0; j < 4; j++)
-  //   {
-  //     for (int k = 0; k < N_OF_INTEREST; k++)
-  //     {
-  //       future_disturbance_feedback[j][0] -= self->M_optimal_all[j][k] * self->disturbances_predicted[i][k];
-  //     }
-  //   }
-  // }
-
-  // // add to LQR output
-  // self->cmd_thrust += future_disturbance_feedback[0][0];
-  // self->cmd_roll_rate += future_disturbance_feedback[1][0];
-  // self->cmd_pitch_rate += future_disturbance_feedback[2][0];
-  // self->cmd_yaw_rate += future_disturbance_feedback[3][0];
-
-  // Attitude rate controller: copied from controller_pid.c
-  attitudeDesired.yaw = capAngle(attitudeDesired.yaw + setpoint->attitudeRate.yaw * ATTITUDE_UPDATE_DT);
-
-  float yawMaxDelta = attitudeControllerGetYawMaxDelta();
-  if (yawMaxDelta != 0.0f)
-  {
-    float delta = capAngle(attitudeDesired.yaw - state->attitude.yaw);
-    // keep the yaw setpoint within +/- yawMaxDelta from the current yaw
-    if (delta > yawMaxDelta)
+    // compute error
+    for (int i = 0; i < N; i++)
     {
-      attitudeDesired.yaw = state->attitude.yaw + yawMaxDelta;
+      errorArray[i] = setpointArray[i] - stateArray[i];
     }
-    else if (delta < -yawMaxDelta)
-    {
-      attitudeDesired.yaw = state->attitude.yaw - yawMaxDelta;
-    }
-  }
-  attitudeDesired.yaw = capAngle(attitudeDesired.yaw);
 
+    compute_setpoint_viaLQR(self->K_star, errorArray, state->attitude.yaw, control_input);
+
+    // add feedforward thrust to LQR output
+    self->cmd_thrust = control_input[0] + self->mass * GRAVITY_MAGNITUDE;
+    rateDesired.roll = control_input[1];
+    rateDesired.pitch = control_input[2];
+    rateDesired.yaw = control_input[3];
+
+    // predict_future_targets(self, setpoint);
+
+    // float future_disturbance_feedback[4][1] = {0};
+    // for (int i = 0; i < W_RLS; i++)
+    // {
+    //   for (int j = 0; j < 4; j++)
+    //   {
+    //     for (int k = 0; k < N_OF_INTEREST; k++)
+    //     {
+    //       future_disturbance_feedback[j][0] -= self->M_optimal_all[j][k] * self->disturbances_predicted[i][k];
+    //     }
+    //   }
+    // }
+
+    // // add to LQR output
+    // self->cmd_thrust += future_disturbance_feedback[0][0];
+    // self->cmd_roll_rate += future_disturbance_feedback[1][0];
+    // self->cmd_pitch_rate += future_disturbance_feedback[2][0];
+    // self->cmd_yaw_rate += future_disturbance_feedback[3][0];
+
+    // Attitude rate controller: copied from controller_pid.c
+    attitudeDesired.yaw = capAngle(attitudeDesired.yaw + setpoint->attitudeRate.yaw * ATTITUDE_UPDATE_DT);
+
+    float yawMaxDelta = attitudeControllerGetYawMaxDelta();
+    if (yawMaxDelta != 0.0f)
+    {
+      float delta = capAngle(attitudeDesired.yaw - state->attitude.yaw);
+      // keep the yaw setpoint within +/- yawMaxDelta from the current yaw
+      if (delta > yawMaxDelta)
+      {
+        attitudeDesired.yaw = state->attitude.yaw + yawMaxDelta;
+      }
+      else if (delta < -yawMaxDelta)
+      {
+        attitudeDesired.yaw = state->attitude.yaw - yawMaxDelta;
+      }
+    }
+    attitudeDesired.yaw = capAngle(attitudeDesired.yaw);
+  }
+
+  actuatorThrust = setpoint->thrust;
   attitudeDesired.roll = setpoint->attitude.roll;
   attitudeDesired.pitch = setpoint->attitude.pitch;
 
@@ -258,8 +252,8 @@ void controllerRlsFirmware(control_t *control, const setpoint_t *setpoint,
 LOG_GROUP_START(controller)
 /**
  * @brief Thrust command
- */
 LOG_ADD(LOG_FLOAT, cmd_thrust, &g_self.cmd_thrust)
+ */
 /**
  * @brief Roll command
  */
