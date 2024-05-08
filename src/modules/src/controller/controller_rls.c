@@ -203,7 +203,7 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
   self->r_yaw = radians(sensors->gyro.z);
   self->accelz = sensors->acc.z;
 
-  control->thrust = actuatorThrust;
+  control->thrust = self->cmd_thrust;
 
   if (control->thrust == 0)
   {
