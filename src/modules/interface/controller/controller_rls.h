@@ -4,8 +4,8 @@
 #include "stabilizer_types.h"
 #include "math3d.h"
 
-#define N 9
-#define M 4
+#define N_ 9
+#define M_ 4
 #define DELTA_T 0.002f
 #define W_RLS 5 // prediction horizon
 #define N_OF_INTEREST 6
@@ -21,15 +21,15 @@ typedef struct
     float mass;
     float massThrust;
 
-    float A[N][N];
-    float B[N][M];
+    float A[N_][N_];
+    float B[N_][M_];
 
-    float K_star[M][N];
+    float K_star[M_][N_];
     float S_target_aug_all[W_RLS][W_RLS][N_OF_INTEREST][N_OF_INTEREST];
     float P[N_OF_INTEREST][N_OF_INTEREST];
 
     float disturbances_predicted[W_RLS][N_OF_INTEREST];
-    float M_optimal_all[4][N];
+    float M_optimal_all[4][N_];
 
     float cmd_thrust;
     float cmd_roll;

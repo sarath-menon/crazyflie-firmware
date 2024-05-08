@@ -3,10 +3,10 @@
 #include "physicalConstants.h"
 #include "commander.h"
 
-void initialize_matrices(float A[N][N], float B[N][M], float m)
+void initialize_matrices(float A[N_][N_], float B[N_][M_], float m)
 {
     // Initialize matrix A_outer
-    float A_outer[N][N] = {
+    float A_outer[N_][N_] = {
         {0, 0, 0, 1, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 1, 0, 0, 0, 0},
         {0, 0, 0, 0, 0, 1, 0, 0, 0},
@@ -18,7 +18,7 @@ void initialize_matrices(float A[N][N], float B[N][M], float m)
         {0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
     // Initialize matrix B_outer
-    float B_outer[N][M] = {
+    float B_outer[N_][M_] = {
         {0, 0, 0, 0},
         {0, 0, 0, 0},
         {0, 0, 0, 0},
@@ -30,28 +30,28 @@ void initialize_matrices(float A[N][N], float B[N][M], float m)
         {0, 0, 0, 1}};
 
     // Compute A = I + DELTA_T * A_outer
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N_; i++)
     {
-        for (int j = 0; j < N; j++)
+        for (int j = 0; j < N_; j++)
         {
             A[i][j] = (float)(i == j ? 1.0 : 0.0) + DELTA_T * A_outer[i][j];
         }
     }
 
     // Compute B = DELTA_T * B_outer
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N_; i++)
     {
-        for (int j = 0; j < M; j++)
+        for (int j = 0; j < M_; j++)
         {
             B[i][j] = DELTA_T * (float)B_outer[i][j];
         }
     }
 }
 
-void compute_setpoint_viaLQR(float K_star[M][N], float error_inertial[N], float curr_yaw, float u[M])
+void compute_setpoint_viaLQR(float K_star[M_][N_], float error_inertial[N_], float curr_yaw, float u[M_])
 {
 
-    float error_body[N];
+    float error_body[N_];
 
     float sinyaw = sin(curr_yaw);
     float cosyaw = cos(curr_yaw);
@@ -95,7 +95,7 @@ void predict_future_targets(controllerRls_t *self, const setpoint_t *setpoint)
         setpoint->velocity.z,
     };
 
-    float last_pred_target_state_full[N] = {
+    float last_pred_target_state_full[N_] = {
         setpoint->position.x, setpoint->position.y, setpoint->position.z,
         setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
         setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
@@ -140,7 +140,7 @@ void predict_future_targets(controllerRls_t *self, const setpoint_t *setpoint)
             pred_target_state_full[k][i] = pred_target_state[i];
         }
 
-        float pred_target_state_full_complete[N] = {0}; // Initialize a full state vector with zeros
+        float pred_target_state_full_complete[N_] = {0}; // Initialize a full state vector with zeros
 
         // Insert the predicted state into the full state vector
         for (int i = 0; i < N_OF_INTEREST; i++)

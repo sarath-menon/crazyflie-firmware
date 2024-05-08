@@ -51,15 +51,15 @@ void controllerRlsInit(controllerRls_t *self)
   // initialize_matrices(self->A, self->B, self->mass);
 
   // Initialize K_star for LQR
-  float K_star[M][N] = {
+  float K_star[M_][N_] = {
       {0, 0, 0.98, 0, 0, 0.25, 0, 0, 0},
       {0, -3.2, 0, 0, -2.0, 0, 4.0, 0, 0},
       {3.2, 0, 0, 2.0, 0, 0, 0, 4.0, 0},
       {0, 0, 0, 0, 0, 0, 0, 0, 2.3}};
 
-  for (int i = 0; i < M; i++)
+  for (int i = 0; i < M_; i++)
   {
-    for (int j = 0; j < N; j++)
+    for (int j = 0; j < N_; j++)
     {
       self->K_star[i][j] = K_star[i][j];
     }
@@ -94,8 +94,8 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
                    const state_t *state,
                    const stabilizerStep_t stabilizerStep)
 {
-  float errorArray[N];
-  float control_input[M];
+  float errorArray[N_];
+  float control_input[M_];
 
   control->controlMode = controlModeLegacy;
 
@@ -105,19 +105,19 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
     // dt = (float)(1.0f/ATTITUDE_RATE);
 
     // position, velocity, attitude setpoints
-    float setpointArray[N] = {
+    float setpointArray[N_] = {
         setpoint->position.x, setpoint->position.y, setpoint->position.z,
         setpoint->velocity.x, setpoint->velocity.y, setpoint->velocity.z,
         setpoint->attitude.roll, setpoint->attitude.pitch, setpoint->attitude.yaw};
 
     // positon, velocity, attitude, attitude rate states
-    float stateArray[N] = {
+    float stateArray[N_] = {
         state->position.x, state->position.y, state->position.z,
         state->velocity.x, state->velocity.y, state->velocity.z,
         state->attitude.roll, state->attitude.pitch, state->attitude.yaw};
 
     // compute error
-    for (int i = 0; i < N; i++)
+    for (int i = 0; i < N_; i++)
     {
       errorArray[i] = setpointArray[i] - stateArray[i];
     }
