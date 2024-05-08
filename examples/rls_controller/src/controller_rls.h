@@ -1,62 +1,62 @@
-#ifndef __CONTROLLER_RLS_H__
-#define __CONTROLLER_RLS_H__
+// #ifndef __CONTROLLER_RLS_H__
+// #define __CONTROLLER_RLS_H__
 
-#include "stabilizer_types.h"
-#include "math3d.h"
+// #include "stabilizer_types.h"
+// #include "math3d.h"
 
-#define N 9
-#define M 4
-#define DELTA_T 0.002f
-#define W_RLS 5 // prediction horizon
-#define N_OF_INTEREST 6
+// #define N 9
+// #define M 4
+// #define DELTA_T 0.002f
+// #define W_RLS 5 // prediction horizon
+// #define N_OF_INTEREST 6
 
-static const int IDX_OF_INTEREST[] = {0, 1, 2, 3, 4, 5};
+// static const int IDX_OF_INTEREST[] = {0, 1, 2, 3, 4, 5};
 
-#define MAX_ERROR_XY 0.3f
-#define MAX_ERROR_Z 0.4f
-#define MAX_ERROR_YAW 1.0472f // approximately 60 degrees in radians
+// #define MAX_ERROR_XY 0.3f
+// #define MAX_ERROR_Z 0.4f
+// #define MAX_ERROR_YAW 1.0472f // approximately 60 degrees in radians
 
-typedef struct
-{
-    float mass;
-    float massThrust;
+// typedef struct
+// {
+//     float mass;
+//     float massThrust;
 
-    float A[N][N];
-    float B[N][M];
+//     float A[N][N];
+//     float B[N][M];
 
-    float K_star[M][N];
-    float S_target_aug_all[W_RLS][W_RLS][N_OF_INTEREST][N_OF_INTEREST];
-    float P[N_OF_INTEREST][N_OF_INTEREST];
+//     float K_star[M][N];
+//     float S_target_aug_all[W_RLS][W_RLS][N_OF_INTEREST][N_OF_INTEREST];
+//     float P[N_OF_INTEREST][N_OF_INTEREST];
 
-    float disturbances_predicted[W_RLS][N_OF_INTEREST];
-    float M_optimal_all[4][N];
+//     float disturbances_predicted[W_RLS][N_OF_INTEREST];
+//     float M_optimal_all[4][N];
 
-    float cmd_thrust;
-    float cmd_roll;
-    float cmd_pitch;
-    float cmd_yaw;
-    float r_roll;
-    float r_pitch;
-    float r_yaw;
-    float accelz;
-} controllerRls_t;
+//     float cmd_thrust;
+//     float cmd_roll;
+//     float cmd_pitch;
+//     float cmd_yaw;
+//     float r_roll;
+//     float r_pitch;
+//     float r_yaw;
+//     float accelz;
+// } controllerRls_t;
 
-void controllerRlsInit(controllerRls_t *self);
-bool controllerRlsTest(controllerRls_t *self);
-void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *setpoint,
-                   const sensorData_t *sensors,
-                   const state_t *state,
-                   const stabilizerStep_t stabilizerStep);
+// void controllerRlsInit(controllerRls_t *self);
+// bool controllerRlsTest(controllerRls_t *self);
+// void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *setpoint,
+//                    const sensorData_t *sensors,
+//                    const state_t *state,
+//                    const stabilizerStep_t stabilizerStep);
 
-#ifdef CRAZYFLIE_FW
+// #ifdef CRAZYFLIE_FW
 
-void controllerRlsFirmwareInit(void);
-bool controllerRlsFirmwareTest(void);
-void controllerRlsFirmware(control_t *control, const setpoint_t *setpoint,
-                           const sensorData_t *sensors,
-                           const state_t *state,
-                           const stabilizerStep_t stabilizerStep);
+// void controllerRlsFirmwareInit(void);
+// bool controllerRlsFirmwareTest(void);
+// void controllerRlsFirmware(control_t *control, const setpoint_t *setpoint,
+//                            const sensorData_t *sensors,
+//                            const state_t *state,
+//                            const stabilizerStep_t stabilizerStep);
 
-#endif // CRAZYFLIE_FW
+// #endif // CRAZYFLIE_FW
 
-#endif //__CONTROLLER_RLS_H__
+// #endif //__CONTROLLER_RLS_H__
