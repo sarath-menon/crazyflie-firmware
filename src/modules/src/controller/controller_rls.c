@@ -20,9 +20,8 @@ static float actuatorThrust;
 // firmware as the only instance and in bindings
 // to hold the default values
 static controllerRls_t g_self = {
-    .mass = CF_MASS,
+    .mass = 0.034f,
     .massThrust = 132000,
-
 };
 
 static float capAngle(float angle)
