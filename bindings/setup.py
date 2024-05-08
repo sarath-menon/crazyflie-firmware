@@ -42,6 +42,8 @@ fw_sources = [
     "src/modules/src/controller/controller_mellinger.c",
     "src/modules/src/controller/controller_brescianini.c",
     "src/modules/src/controller/controller_rls.c",
+    "src/modules/src/controller/utils.c",
+    "src/modules/src/controller/math_lib.c",
     "src/utils/src/pid.c",
     "src/utils/src/filter.c",
     "src/utils/src/num.c",
