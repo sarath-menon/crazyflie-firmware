@@ -60,6 +60,20 @@ float wrap_angle(float angle)
     return angle;
 }
 
+float thrust_newton_to_cmd_light(float thrust)
+{
+    float cmd_16bit = thrust * MOTOR_CMD_SCALING_CONST;
+    if (cmd_16bit < MOTOR_CMD_MIN)
+    {
+        cmd_16bit = MOTOR_CMD_MIN;
+    }
+    else if (cmd_16bit > MOTOR_CMD_MAX)
+    {
+        cmd_16bit = MOTOR_CMD_MAX;
+    }
+
+    return cmd_16bit;
+}
 // void compute_setpoint_viaLQR(float K_star[M_][N_], float error_inertial[N_], float curr_yaw, float u[M_])
 // {
 
