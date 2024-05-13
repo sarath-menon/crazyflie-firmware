@@ -11,7 +11,7 @@
 #define N_OF_INTEREST 6
 #define MOTOR_CMD_MIN 10000
 #define MOTOR_CMD_MAX 65000
-#define MOTOR_CMD_SCALING_CONST 430000
+#define MOTOR_CMD_SCALING_CONST 107500
 
 static const int IDX_OF_INTEREST[] = {0, 1, 2, 3, 4, 5};
 

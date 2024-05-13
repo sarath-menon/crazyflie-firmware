@@ -21,7 +21,7 @@ static float actuatorThrust;
 // to hold the default values
 static controllerRls_t g_self = {
     .mass = 0.034f,
-    .massThrust = 132000,
+    .massThrust = 107500,
 };
 
 static float capAngle(float angle)
@@ -203,7 +203,7 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
   self->r_yaw = radians(sensors->gyro.z);
   self->accelz = sensors->acc.z;
 
-  control->thrust = thrust_newton_to_cmd_light(self->cmd_thrust / 4.0f);
+  control->thrust = thrust_newton_to_cmd_light(self->cmd_thrust);
 
   if (control->thrust == 0)
   {
