@@ -118,13 +118,14 @@ void controllerRls(controllerRls_t *self, control_t *control, const setpoint_t *
     // compute error
     for (int i = 0; i < N_; i++)
     {
-      errorArray[i] = setpointArray[i] - stateArray[i];
+      errorArray[i] = stateArray[i] - setpointArray[i];
     }
 
     compute_setpoint_viaLQR(self->K_star, errorArray, state->attitude.yaw, control_input);
 
     // add feedforward thrust to LQR output
     self->cmd_thrust = control_input[0] + self->mass * GRAVITY_MAGNITUDE;
+    // self->cmd_thrust = control_input[0];
     rateDesired.roll = control_input[1];
     rateDesired.pitch = control_input[2];
     rateDesired.yaw = control_input[3];
