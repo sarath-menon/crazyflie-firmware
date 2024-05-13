@@ -132,15 +132,12 @@ void compute_setpoint_viaLQR(float K_star[M_][N_], float error_inertial[N_], flo
 
     float max_error_xy = 0.3f;
     float max_error_z = 0.4f;
-    float max_error_z_dot = 0.2f;
 
     float error_body[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     float error_x_inertial = fmaxf(fminf(error_inertial[0], max_error_xy), -max_error_xy);
     float error_y_inertial = fmaxf(fminf(error_inertial[1], max_error_xy), -max_error_xy);
-
     float error_z_inertial = fmaxf(fminf(error_inertial[2], max_error_z), -max_error_z);
-    float error_z_dot_inertial = fmaxf(fminf(error_inertial[5], max_error_z_dot), -max_error_z_dot);
 
     float sinyaw = sinf(curr_yaw);
     float cosyaw = cosf(curr_yaw);
@@ -151,7 +148,11 @@ void compute_setpoint_viaLQR(float K_star[M_][N_], float error_inertial[N_], flo
 
     error_body[3] = error_inertial[3] * cosyaw + error_inertial[4] * sinyaw;
     error_body[4] = error_inertial[4] * cosyaw - error_inertial[3] * sinyaw;
-    error_body[5] = error_z_dot_inertial;
+
+    error_body[5] = error_inertial[5];
+    error_body[6] = error_inertial[6];
+    error_body[7] = error_inertial[7];
+    error_body[8] = error_inertial[8];
 
     for (int i = 0; i < 4; i++)
     {
