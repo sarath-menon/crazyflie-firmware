@@ -47,30 +47,38 @@ void initialize_matrices(float A[N_][N_], float B[N_][M_], float m)
         }
     }
 }
+float wrap_angle(float angle) {
+    while (angle > (float)M_PI) {
+        angle -= (float)(2 * M_PI);
+    }
+    while (angle < (float)(-M_PI)) {
+        angle += (float)(2 * M_PI);
+    }
+    return angle;
+}
 
 void compute_setpoint_viaLQR(float K_star[M_][N_], float error_inertial[N_], float curr_yaw, float u[M_])
 {
 
     float error_body[N_];
 
-    float sinyaw = sin(curr_yaw);
-    float cosyaw = cos(curr_yaw);
+    float max_error_xy = 0.3f;
+    float max_error_z = 0.4f;
+    // float max_error_yaw = DEG2RAD(60);
 
-    // compute error in inertial frame
-    float error_x_inertial = fmin(fmax(error_inertial[0], -MAX_ERROR_XY), MAX_ERROR_XY);
-    float error_y_inertial = fmin(fmax(error_inertial[1], -MAX_ERROR_XY), MAX_ERROR_XY);
-    float error_z_inertial = fmin(fmax(error_inertial[2], -MAX_ERROR_Z), MAX_ERROR_Z);
-    // float error_yaw_inertial = fmin(fmax(error_inertial[8], -MAX_ERROR_YAW), MAX_ERROR_YAW);
+    float error_x_inertial = fmin(fmax(error_inertial[0], -max_error_xy), max_error_xy);
+    float error_y_inertial = fmin(fmax(error_inertial[1], -max_error_xy), max_error_xy);
+    float error_z_inertial = fmin(fmax(error_inertial[2], -max_error_z), max_error_z);
+    // float error_yaw_inertial = wrap_angle(error_inertial[8]);
 
-    // convert error to body frame
-    error_body[0] = error_x_inertial * cosyaw + error_y_inertial * sinyaw;
-    error_body[1] = error_y_inertial * cosyaw - error_x_inertial * sinyaw;
+    error_body[0] = error_x_inertial;
+    error_body[1] = error_y_inertial;
     error_body[2] = error_z_inertial;
-    error_body[3] = error_inertial[3] * cosyaw + error_inertial[4] * sinyaw;
-    error_body[4] = error_inertial[4] * cosyaw - error_inertial[3] * sinyaw;
+    error_body[3] = error_inertial[3];
+    error_body[4] = error_inertial[4];
 
     // compute control input in body frame
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < M_; i++)
     {
         u[i] = 0;
         for (int j = 0; j < 1; j++)
