@@ -74,6 +74,28 @@ float thrust_newton_to_cmd_light(float thrust)
 
     return cmd_16bit;
 }
+
+
+float thrust_newton_to_cmd(float thrust)
+{
+    float motor_poly[3] = {5.484560e-4, 1.032633e-6, 2.130295e-11};
+    float discriminant = powf(motor_poly[1], 2) - 4 * motor_poly[2] * (motor_poly[0] - thrust);
+    float cmd_16bit = (-motor_poly[1] + sqrtf(fmaxf(0, discriminant))) / (2 * motor_poly[2]);
+
+    if (cmd_16bit < MOTOR_CMD_MIN)
+    {
+        cmd_16bit = MOTOR_CMD_MIN;
+    }
+    else if (cmd_16bit > MOTOR_CMD_MAX)
+    {
+        cmd_16bit = MOTOR_CMD_MAX;
+    }
+
+    return cmd_16bit;
+}
+
+
+
 // void compute_setpoint_viaLQR(float K_star[M_][N_], float error_inertial[N_], float curr_yaw, float u[M_])
 // {
 

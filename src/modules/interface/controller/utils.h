@@ -13,4 +13,6 @@ void RLS_update(controllerRls_t *self);
 
 float thrust_newton_to_cmd_light(float thrust);
 
+float thrust_newton_to_cmd(float thrust);
+
 #endif //__CONTROLLER_RLS_UTILS_H__
