@@ -47,41 +47,75 @@ void initialize_matrices(float A[N_][N_], float B[N_][M_], float m)
         }
     }
 }
-float wrap_angle(float angle) {
-    while (angle > (float)M_PI) {
+float wrap_angle(float angle)
+{
+    while (angle > (float)M_PI)
+    {
         angle -= (float)(2 * M_PI);
     }
-    while (angle < (float)(-M_PI)) {
+    while (angle < (float)(-M_PI))
+    {
         angle += (float)(2 * M_PI);
     }
     return angle;
 }
 
+// void compute_setpoint_viaLQR(float K_star[M_][N_], float error_inertial[N_], float curr_yaw, float u[M_])
+// {
+
+//     float error_body[N_];
+
+//     float max_error_xy = 0.3f;
+//     float max_error_z = 0.4f;
+//     // float max_error_yaw = DEG2RAD(60);
+
+//     float error_x_inertial = fmin(fmax(error_inertial[0], -max_error_xy), max_error_xy);
+//     float error_y_inertial = fmin(fmax(error_inertial[1], -max_error_xy), max_error_xy);
+//     float error_z_inertial = fmin(fmax(error_inertial[2], -max_error_z), max_error_z);
+//     // float error_yaw_inertial = wrap_angle(error_inertial[8]);
+
+//     error_body[0] = error_x_inertial;
+//     error_body[1] = error_y_inertial;
+//     error_body[2] = error_z_inertial;
+//     error_body[3] = error_inertial[3];
+//     error_body[4] = error_inertial[4];
+
+//     // compute control input in body frame
+//     for (int i = 0; i < M_; i++)
+//     {
+//         u[i] = 0;
+//         for (int j = 0; j < 1; j++)
+//         {
+//             u[i] += -K_star[i][j] * error_body[j];
+//         }
+//     }
+// }
+
 void compute_setpoint_viaLQR(float K_star[M_][N_], float error_inertial[N_], float curr_yaw, float u[M_])
 {
 
-    float error_body[N_];
-
     float max_error_xy = 0.3f;
     float max_error_z = 0.4f;
-    // float max_error_yaw = DEG2RAD(60);
+    float error_body[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-    float error_x_inertial = fmin(fmax(error_inertial[0], -max_error_xy), max_error_xy);
-    float error_y_inertial = fmin(fmax(error_inertial[1], -max_error_xy), max_error_xy);
-    float error_z_inertial = fmin(fmax(error_inertial[2], -max_error_z), max_error_z);
-    // float error_yaw_inertial = wrap_angle(error_inertial[8]);
+    float error_x_inertial = fmaxf(fminf(error_inertial[0], max_error_xy), -max_error_xy);
+    float error_y_inertial = fmaxf(fminf(error_inertial[1], max_error_xy), -max_error_xy);
 
-    error_body[0] = error_x_inertial;
-    error_body[1] = error_y_inertial;
+    float error_z_inertial = fmaxf(fminf(error_inertial[2], max_error_z), -max_error_z);
+
+    float sinyaw = sinf(curr_yaw);
+    float cosyaw = cosf(curr_yaw);
+
+    error_body[0] = error_x_inertial * cosyaw + error_y_inertial * sinyaw;
+    error_body[1] = error_y_inertial * cosyaw - error_x_inertial * sinyaw;
     error_body[2] = error_z_inertial;
-    error_body[3] = error_inertial[3];
-    error_body[4] = error_inertial[4];
+    error_body[3] = error_inertial[3] * cosyaw + error_inertial[4] * sinyaw;
+    error_body[4] = error_inertial[4] * cosyaw - error_inertial[3] * sinyaw;
 
-    // compute control input in body frame
-    for (int i = 0; i < M_; i++)
+    for (int i = 0; i < 4; i++)
     {
         u[i] = 0;
-        for (int j = 0; j < 1; j++)
+        for (int j = 0; j < 9; j++)
         {
             u[i] += -K_star[i][j] * error_body[j];
         }
