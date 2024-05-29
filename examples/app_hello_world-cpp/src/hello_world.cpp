@@ -1,33 +1,70 @@
-#define DEBUG_MODULE "HELLOWORLD"
+/**
+ * ,---------,       ____  _ __
+ * |  ,-^-,  |      / __ )(_) /_______________ _____  ___
+ * | (  O  ) |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
+ * | / ,--´  |    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
+ *    +------`   /_____/_/\__/\___/_/   \__,_/ /___/\___/
+ *
+ * Crazyflie control firmware
+ *
+ * Copyright (C) 2022 Bitcraze AB
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, in version 3.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * hello_world.c - App layer application of a simple hello world debug print every
+ *   2 seconds.
+ */
 
-extern "C" {
-#include <stdbool.h>
-#include <stdint.h>
+
 #include <string.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-#include "app.h"
-#include "crtp.h"
-#include "debug.h"
+#include <cassert>
+#include <string>
 
-#include "FreeRTOS.h"
-#include "task.h"
+extern "C"
+{
+  #include "app.h"
+
+  #include "FreeRTOS.h"
+  #include "task.h"
+
+  #include "debug.h"
 }
 
-void appMain() {
+#define DEBUG_MODULE "HELLOWORLD"
 
-  static CRTPPacket msg;
+class MyClass {
+  public:
+    int myNum;
+    std::string myString;
+};
 
-  while (1) {
-    vTaskDelay(M2T(1000));
-    // DEBUG_PRINT("Hello World!\n");
+void appMain()
+{
+  DEBUG_PRINT("Waiting for activation ...\n");
 
-    // custom CRTP message
-    uint8_t size = 1;
-    msg.size = size;
-    uint8_t data = 'a';
-    msg.data[0] = data;
+  MyClass *cl = new MyClass();
+  DEBUG_PRINT("MyClass has a num: %d\n", cl->myNum);
 
-    // // send msg
-    // crtpSendPacket(&msg);
+  /* make sure that the assertion is not simple enough to be optimized away
+   * by the compiler */
+  assert(cl->myNum + cl->myString.size() == 0);
+
+  while(1) {
+    vTaskDelay(M2T(2000));
+    DEBUG_PRINT("Hello World!\n");
   }
 }

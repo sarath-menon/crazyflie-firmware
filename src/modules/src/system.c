@@ -40,7 +40,6 @@
 #include "ledseq.h"
 #include "pm.h"
 
-#include "config.h"
 #include "system.h"
 #include "platform.h"
 #include "storage.h"
@@ -78,20 +77,14 @@
   #include "cpxlink.h"
 #endif
 
-#ifndef CONFIG_MOTORS_REQUIRE_ARMING
-  #define ARMING_REQUIRED true
-#else
-  #define ARMING_REQUIRED false
-#endif
-
 /* Private variable */
 static bool selftestPassed;
-static bool arm = ARMING_REQUIRED;
 static uint8_t dumpAssertInfo = 0;
 static bool isInit;
 
 static char nrf_version[16];
 static uint8_t testLogParam;
+static uint8_t doAssert;
 
 STATIC_MEM_TASK_ALLOC(systemTask, SYSTEM_TASK_STACKSIZE);
 
@@ -117,10 +110,7 @@ void systemInit(void)
   canStartMutex = xSemaphoreCreateMutexStatic(&canStartMutexBuffer);
   xSemaphoreTake(canStartMutex, portMAX_DELAY);
 
-// initialize USB link
   usblinkInit();
-
-  // initialize system load monitor
   sysLoadInit();
 #if CONFIG_ENABLE_CPX
   cpxlinkInit();
@@ -128,8 +118,6 @@ void systemInit(void)
 
   /* Initialized here so that DEBUG_PRINT (buffered) can be used early */
   debugInit();
-
-  // initialize CRTP communication stack
   crtpInit();
   consoleInit();
 
@@ -365,20 +353,6 @@ void systemWaitStart(void)
   xSemaphoreGive(canStartMutex);
 }
 
-void systemSetArmed(bool val)
-{
-  if (arm != val) {
-    // Set using parameter to update any client
-    paramVarId_t armId = paramGetVarId("system", "arm");
-    paramSetInt(armId, val);
-  }
-}
-
-bool systemIsArmed()
-{
-  return arm;
-}
-
 void systemRequestShutdown()
 {
   SyslinkPacket slp;
@@ -435,6 +409,12 @@ void vApplicationIdleHook( void )
 #endif
 }
 
+static void doAssertCallback(void) {
+  if (doAssert) {
+    ASSERT_FAILED();
+  }
+}
+
 /**
  * This parameter group contain read-only parameters pertaining to the CPU
  * in the Crazyflie.
@@ -473,11 +453,6 @@ PARAM_GROUP_START(system)
 PARAM_ADD_CORE(PARAM_INT8 | PARAM_RONLY, selftestPassed, &selftestPassed)
 
 /**
- * @brief Set to nonzero to arm the system
- */
-PARAM_ADD_CORE(PARAM_INT8, arm, &arm)
-
-/**
  * @brief Set to nonzero to trigger dump of assert information to the log.
  */
 PARAM_ADD(PARAM_UINT8, assertInfo, &dumpAssertInfo)
@@ -488,17 +463,19 @@ PARAM_ADD(PARAM_UINT8, assertInfo, &dumpAssertInfo)
  */
 PARAM_ADD(PARAM_UINT8, testLogParam, &testLogParam)
 
+/**
+ * @brief Set to non-zero to trigger a failed assert, useful for debugging
+ *
+ */
+PARAM_ADD_WITH_CALLBACK(PARAM_UINT8, doAssert, &doAssert, doAssertCallback)
+
+
 PARAM_GROUP_STOP(system)
 
 /**
  *  System loggable variables to check different system states.
  */
 LOG_GROUP_START(sys)
-/**
- * @brief If zero, arming system is preventing motors to start
- */
-LOG_ADD(LOG_INT8, armed, &arm)
-
 /**
  * @brief Test util for log and param. The value is set through the system.testLogParam parameter
  */

@@ -29,23 +29,6 @@
 #ifndef __CFASSERT_H__
 #define __CFASSERT_H__
 
-#ifdef SITL_CF2
-#include "FreeRTOSConfig.h"
-
-#define ASSERT(e)  if (e) ; \
-        else vAssertCalled( __LINE__ , __FILE__)
-
-#ifdef DEBUG
-#define IF_DEBUG_ASSERT(e)  if (e) ; \
-        else vAssertCalled(__LINE__ , __FILE__)
-#else
-#define IF_DEBUG_ASSERT(e)
-#endif
-
-#define ASSERT_FAILED() assertFail( "", __FILE__, __LINE__ )
-
-#else
-
 #define ASSERT(e)  if (e) ; \
         else assertFail( #e, __FILE__, __LINE__ )
 
@@ -58,7 +41,6 @@
 
 #define ASSERT_FAILED() assertFail( "", __FILE__, __LINE__ )
 
-#endif
 /**
  * @brief Assert that verifies that a pointer is pointing at memory that can be
  * used for DMA transfers. There are two types of RAM in the Crazyflie and CCM

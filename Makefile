@@ -1,6 +1,6 @@
 
 OPENOCD           ?= openocd
-OPENOCD_INTERFACE ?= interface/stlink.cfg
+OPENOCD_INTERFACE ?= interface/stlink-v2.cfg
 OPENOCD_TARGET    ?= target/stm32f4x.cfg
 OPENOCD_CMDS      ?=
 
@@ -19,7 +19,115 @@ endif
 
 DFU_UTIL          ?= dfu-util
 
-PROG ?= $(srctree)/build/src/init/cf2
+CLOAD_CMDS        ?=
+CLOAD_ARGS        ?=
+
+ARCH := stm32f4
+SRCARCH := stm32f4
+
+ARCH_CFLAGS += -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -g3
+ARCH_CFLAGS += -fno-math-errno -DARM_MATH_CM4 -D__FPU_PRESENT=1 -mfp16-format=ieee
+ARCH_CFLAGS += -Wno-array-bounds -Wno-stringop-overread
+ARCH_CFLAGS += -Wno-stringop-overflow
+ARCH_CFLAGS += -DSTM32F4XX -DSTM32F40_41xxx -DHSE_VALUE=8000000 -DUSE_STDPERIPH_DRIVER
+
+FREERTOS = $(srctree)/vendor/FreeRTOS
+PORT = $(FREERTOS)/portable/GCC/ARM_CM4F
+LIB = $(srctree)/src/lib
+PROCESSOR = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
+LINKER_DIR = $(srctree)/tools/make/F405/linker
+
+LDFLAGS += --specs=nosys.specs --specs=nano.specs $(PROCESSOR)
+image_LDFLAGS += -Wl,-Map=$(PROG).map,--cref,--gc-sections,--undefined=uxTopUsedPriority
+image_LDFLAGS += -L$(srctree)/tools/make/F405/linker
+image_LDFLAGS += -T $(LINKER_DIR)/FLASH_CLOAD.ld
+
+INCLUDES += -I$(srctree)/vendor/CMSIS/CMSIS/Core/Include -I$(srctree)/vendor/CMSIS/CMSIS/DSP/Include
+INCLUDES += -I$(srctree)/vendor/libdw1000/inc
+INCLUDES += -I$(FREERTOS)/include -I$(PORT)
+INCLUDES += -I$(srctree)/src/config
+INCLUDES += -I$(srctree)/src/platform/interface
+INCLUDES += -I$(srctree)/src/deck/interface -I$(srctree)/src/deck/drivers/interface
+INCLUDES += -I$(srctree)/src/drivers/interface -I$(srctree)/src/drivers/bosch/interface
+INCLUDES += -I$(srctree)/src/drivers/esp32/interface
+INCLUDES += -I$(srctree)/src/hal/interface
+INCLUDES += -I$(srctree)/src/modules/interface -I$(srctree)/src/modules/interface/kalman_core -I$(srctree)/src/modules/interface/lighthouse  -I$(srctree)/src/modules/interface/outlierfilter
+INCLUDES += -I$(srctree)/src/modules/interface/cpx -I$(srctree)/src/modules/interface/p2pDTR -I$(srctree)/src/modules/interface/controller  -I$(srctree)/src/modules/interface/estimator
+INCLUDES += -I$(srctree)/src/utils/interface -I$(srctree)/src/utils/interface/kve -I$(srctree)/src/utils/interface/lighthouse -I$(srctree)/src/utils/interface/tdoa
+INCLUDES += -I$(LIB)/FatFS
+INCLUDES += -I$(LIB)/CMSIS/STM32F4xx/Include
+INCLUDES += -I$(LIB)/STM32_USB_Device_Library/Core/inc
+INCLUDES += -I$(LIB)/STM32_USB_OTG_Driver/inc
+INCLUDES += -I$(LIB)/STM32F4xx_StdPeriph_Driver/inc
+INCLUDES += -I$(LIB)/vl53l1 -I$(LIB)/vl53l1/core/inc
+INCLUDES += -I$(KBUILD_OUTPUT)/include/generated
+
+# Here we tell Kbuild where to look for Kbuild files which will tell the
+# buildsystem which sources to build
+objs-y += src
+objs-y += vendor
+
+objs-y += app_api
+objs-y += $(OOT)
+
+MEM_SIZE_FLASH_K = 1008
+MEM_SIZE_RAM_K = 128
+MEM_SIZE_CCM_K = 64
+
+
+#
+# Make sure Kbuild use our config that hinders some configs from being enabled
+# on allyesconfig or randconfig.
+#
+export KCONFIG_ALLCONFIG ?= configs/all.config
+
+KBUILD_OUTPUT ?= build
+
+-include $(KBUILD_OUTPUT)/include/config/auto.conf
+
+#
+# Special hack to handle float define. Kconfig has no float values
+# so we use string. To avoid having to do atof in code we instead
+# catch it here and convert to an, unquoted, float define.
+#
+ifneq ($(CONFIG_DECK_LOCO_2D_POSITION_HEIGHT),)
+unquoted = $(patsubst "%",%,$(CONFIG_DECK_LOCO_2D_POSITION_HEIGHT))
+ARCH_CFLAGS += -DDECK_LOCO_2D_POSITION_HEIGHT=$(unquoted)
+endif
+
+ifeq ($(CONFIG_PLATFORM_TAG),y)
+PLATFORM = tag
+endif
+
+ifeq ($(CONFIG_PLATFORM_BOLT), y)
+PLATFORM = bolt
+endif
+
+ifeq ($(CONFIG_PLATFORM_FLAPPER),y)
+PLATFORM = flapper
+endif
+
+
+PLATFORM  ?= cf2
+PROG ?= $(PLATFORM)
+
+ifeq ($(CONFIG_DEBUG),y)
+ARCH_CFLAGS	+= -O0 -Wconversion
+else
+ARCH_CFLAGS += -Os -Werror
+endif
+
+_all:
+
+all: $(PROG).hex $(PROG).bin
+	@echo "Build for the $(PLATFORM) platform!"
+	@$(PYTHON) $(srctree)/tools/make/versionTemplate.py --crazyflie-base $(srctree) --print-version
+	@$(PYTHON) $(srctree)/tools/make/size.py $(SIZE) $(PROG).elf $(MEM_SIZE_FLASH_K) $(MEM_SIZE_RAM_K) $(MEM_SIZE_CCM_K)
+
+include tools/make/targets.mk
+
+size:
+	@$(PYTHON) $(srctree)/tools/make/size.py $(SIZE) $(PROG).elf $(MEM_SIZE_FLASH_K) $(MEM_SIZE_RAM_K) $(MEM_SIZE_CCM_K)
 
 # Radio bootloader
 CLOAD ?= 1
@@ -46,6 +154,7 @@ flash:
 	$(OPENOCD) -d2 -f $(OPENOCD_INTERFACE) $(OPENOCD_CMDS) -f $(OPENOCD_TARGET) -c init -c targets -c "reset halt" \
                  -c "flash write_image erase $(PROG).bin $(LOAD_ADDRESS) bin" \
                  -c "verify_image $(PROG).bin $(LOAD_ADDRESS) bin" -c "reset run" -c shutdown
+
 #verify only
 flash_verify:
 	$(OPENOCD) -d2 -f $(OPENOCD_INTERFACE) $(OPENOCD_CMDS) -f $(OPENOCD_TARGET) -c init -c targets -c "reset halt" \
@@ -101,8 +210,9 @@ MOD_INC = src/modules/interface
 MOD_SRC = src/modules/src
 
 bindings_python build/cffirmware.py: bindings/setup.py $(MOD_SRC)/*.c
-	swig -python -I$(MOD_INC) -Isrc/hal/interface -Isrc/utils/interface -Isrc/modules/interface/controller -o build/cffirmware_wrap.c bindings/cffirmware.i
+	swig -python -I$(MOD_INC) -Isrc/hal/interface -Isrc/utils/interface -I$(MOD_INC)/controller -Isrc/platform/interface -I$(MOD_INC)/outlierfilter -I$(MOD_INC)/kalman_core -o build/cffirmware_wrap.c bindings/cffirmware.i
 	$(PYTHON) bindings/setup.py build_ext --inplace
+	cp cffirmware_setup.py build/setup.py
 
 test_python: build/cffirmware.py
 	PYTHONPATH=build $(PYTHON) -m pytest test_python

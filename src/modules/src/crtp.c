@@ -70,7 +70,7 @@ static struct {
 static xQueueHandle  txQueue;
 
 #define CRTP_NBR_OF_PORTS 16
-#define CRTP_TX_QUEUE_SIZE 120
+#define CRTP_TX_QUEUE_SIZE 200
 #define CRTP_RX_QUEUE_SIZE 16
 
 static void crtpTxTask(void *param);
@@ -87,7 +87,7 @@ void crtpInit(void)
 {
   if(isInit)
     return;
-  // queue for data to be transmitted
+
   txQueue = xQueueCreate(CRTP_TX_QUEUE_SIZE, sizeof(CRTPPacket));
   DEBUG_QUEUE_MONITOR_REGISTER(txQueue);
 

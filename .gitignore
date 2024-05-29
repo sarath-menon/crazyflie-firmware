@@ -39,7 +39,6 @@ docs/api/log_param_doc.json
 docs/api
 
 build/
-build_new/
 # To avoid that /tools/build is ignored
 !/tools/*
 
@@ -49,4 +48,4 @@ build_new/
 *.elf
 
 tools/dependency/web/data.js
-src/modules/src/stabilizer_sitl.cpp
+.vscode/settings.json
